@@ -13,6 +13,7 @@ public final class CTREConfigs {
     public CANCoderConfiguration swerveCanCoderConfig;
 
 
+    // Builds & holds all static configurations for the module motors
     public CTREConfigs(){
         swerveAngleFXConfig = new TalonFXConfiguration();
         swerveDriveFXConfig = new TalonFXConfiguration();

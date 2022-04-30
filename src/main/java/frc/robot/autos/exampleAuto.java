@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 
 public class exampleAuto extends SequentialCommandGroup {
-    public exampleAuto(Swerve s_Swerve){
+    public exampleAuto(Swerve swerveDrive){
         TrajectoryConfig config =
             new TrajectoryConfig(
                     Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -44,17 +44,17 @@ public class exampleAuto extends SequentialCommandGroup {
         SwerveControllerCommand swerveControllerCommand =
             new SwerveControllerCommand(
                 exampleTrajectory,
-                s_Swerve::getPose,
+                swerveDrive::getPose,
                 Constants.Swerve.swerveKinematics,
                 new PIDController(Constants.AutoConstants.kPXController, 0, 0),
                 new PIDController(Constants.AutoConstants.kPYController, 0, 0),
                 thetaController,
-                s_Swerve::setModuleStates,
-                s_Swerve);
+                swerveDrive::setModuleStates,
+                swerveDrive);
 
 
         addCommands(
-            new InstantCommand(() -> s_Swerve.resetOdometry(exampleTrajectory.getInitialPose())),
+            new InstantCommand(() -> swerveDrive.resetOdometry(exampleTrajectory.getInitialPose())),
             swerveControllerCommand
         );
     }

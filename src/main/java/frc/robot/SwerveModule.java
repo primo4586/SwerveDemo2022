@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.lib.math.Conversions;
 import frc.lib.util.CTREModuleState;
 import frc.lib.util.SwerveModuleConstants;
+import frc.robot.Constants.Swerve;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
@@ -16,16 +17,19 @@ import com.ctre.phoenix.sensors.CANCoder;
 public class SwerveModule {
     public int moduleNumber;
     private double angleOffset;
-    private TalonFX mAngleMotor;
+    // NOTE: There isn't much of a difference between using TalonFX and WPI_TalonFX, so it's fine to be like this
+    private TalonFX mAngleMotor; 
     private TalonFX mDriveMotor;
     private CANCoder angleEncoder;
     private double lastAngle;
 
-    SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
+    private SimpleMotorFeedforward feedforward;
 
     public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants){
         this.moduleNumber = moduleNumber;
         angleOffset = moduleConstants.angleOffset;
+        feedforward = Swerve.DRIVE_FEEDFORWARD;
+
         
         /* Angle Encoder Config */
         angleEncoder = new CANCoder(moduleConstants.cancoderID);
@@ -53,8 +57,9 @@ public class SwerveModule {
             double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, Constants.Swerve.wheelCircumference, Constants.Swerve.driveGearRatio);
             mDriveMotor.set(ControlMode.Velocity, velocity, DemandType.ArbitraryFeedForward, feedforward.calculate(desiredState.speedMetersPerSecond));
         }
-
-        double angle = (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.Swerve.maxSpeed * 0.01)) ? lastAngle : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
+        
+        //Prevent rotating module if speed is less then 1%. Prevents Jittering.
+        double angle = (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.Swerve.maxSpeed * 0.01)) ? lastAngle : desiredState.angle.getDegrees(); 
         mAngleMotor.set(ControlMode.Position, Conversions.degreesToFalcon(angle, Constants.Swerve.angleGearRatio)); 
         lastAngle = angle;
     }
