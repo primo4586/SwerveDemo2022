@@ -3,6 +3,7 @@ package frc.robot.commands;
 import frc.robot.Constants;
 import frc.robot.subsystems.Swerve;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -12,42 +13,51 @@ public class TeleopSwerve extends CommandBase {
     private double rotation;
     private Translation2d translation;
     private boolean fieldRelative;
-    private boolean openLoop;
     
     private Swerve swerveDrive;
     private Joystick controller;
-    private int translationAxis;
-    private int strafeAxis;
+    private int yAxis;
+    private int xAxis;
     private int rotationAxis;
+
+    private SlewRateLimiter xLimiter = Constants.X_LIMITER;
+    private SlewRateLimiter yLimiter = Constants.Y_LIMITER;
+    private SlewRateLimiter rotationLimiter = Constants.ROTATION_LIMITER;
 
     /**
      * Driver control
      */
-    public TeleopSwerve(Swerve swerveDrive, Joystick controller, int translationAxis, int strafeAxis, int rotationAxis, boolean fieldRelative, boolean openLoop) {
+    public TeleopSwerve(Swerve swerveDrive, Joystick controller, int yAxis, int xAxis, int rotationAxis, boolean fieldRelative) {
         this.swerveDrive = swerveDrive;
         addRequirements(swerveDrive);
 
         this.controller = controller;
-        this.translationAxis = translationAxis;
-        this.strafeAxis = strafeAxis;
+        this.yAxis = yAxis;
+        this.xAxis = xAxis;
         this.rotationAxis = rotationAxis;
         this.fieldRelative = fieldRelative;
-        this.openLoop = openLoop;
     }
 
     @Override
     public void execute() {
-        double yAxis = -controller.getRawAxis(translationAxis);
-        double xAxis = -controller.getRawAxis(strafeAxis);
-        double rAxis = -controller.getRawAxis(rotationAxis);
+        // TODO: Check if this invert is necessary 
+        double yInput = -controller.getRawAxis(yAxis);
+        double xInput = -controller.getRawAxis(xAxis);
+        double rotationInput = -controller.getRawAxis(rotationAxis);
         
-        /* Deadbands */
-        yAxis = (Math.abs(yAxis) < Constants.stickDeadband) ? 0 : yAxis;
-        xAxis = (Math.abs(xAxis) < Constants.stickDeadband) ? 0 : xAxis;
-        rAxis = (Math.abs(rAxis) < Constants.stickDeadband) ? 0 : rAxis;
+        /* Deadbands (If the joystick input is too low to be signifcant, protect the motors from trying to move really small distances) */
+        yInput = (Math.abs(yInput) < Constants.stickDeadband) ? 0 : yInput;
+        xInput = (Math.abs(xInput) < Constants.stickDeadband) ? 0 : xInput;
+        rotationInput = (Math.abs(rotationInput) < Constants.stickDeadband) ? 0 : rotationInput;
 
-        translation = new Translation2d(yAxis, xAxis).times(Constants.Swerve.maxSpeed);
-        rotation = rAxis * Constants.Swerve.maxAngularVelocity;
-        swerveDrive.teleopDrive(translation, rotation, fieldRelative, openLoop);
+        // Slew Rate Limiting (Limiting how big of a change can happen every second)
+        xInput = xLimiter.calculate(xInput);
+        yInput = yLimiter.calculate(yInput);
+        rotationInput = rotationLimiter.calculate(xInput);
+        
+
+        translation = new Translation2d(yInput, xInput).times(Constants.Swerve.maxSpeed);
+        rotation = rotationInput * Constants.Swerve.maxAngularVelocity;
+        swerveDrive.teleopDrive(translation, rotation, fieldRelative, true);
     }
 }
