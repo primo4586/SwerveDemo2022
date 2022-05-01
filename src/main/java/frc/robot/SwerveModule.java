@@ -28,7 +28,7 @@ public class SwerveModule {
     public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants){
         this.moduleNumber = moduleNumber;
         angleOffset = moduleConstants.angleOffset;
-        feedforward = Swerve.DRIVE_FEEDFORWARD;
+        feedforward = Swerve.driveFeedforward;
 
         
         /* Angle Encoder Config */
