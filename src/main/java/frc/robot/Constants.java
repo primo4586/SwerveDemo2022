@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import frc.lib.util.PIDConfig;
 import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
@@ -23,6 +24,7 @@ public final class Constants {
     public static final SlewRateLimiter ROTATION_LIMITER = new SlewRateLimiter(0.1);
 
 
+    public static final double loopPeriod = 0.02;
 
     // TODO: Update Physical Robot constants + ids, inverts and such.
     public static final class Swerve {
@@ -60,22 +62,16 @@ public final class Constants {
         public static final boolean driveEnableCurrentLimit = true;
 
         /* Angle Motor PID Values */
-        public static final double angleKP = 0;
-        public static final double angleKI = 0.0;
-        public static final double angleKD = 0;
-        public static final double angleKF = 0.0;
+       public static final PIDConfig anglePID = new PIDConfig(0, 0, 0,0);
 
         /* Drive Motor PID Values */
-        public static final double driveKP = 0.10;
-        public static final double driveKI = 0.0;
-        public static final double driveKD = 0.0;
-        public static final double driveKF = 0.0;
+        public static final PIDConfig drivePID = new PIDConfig(0, 0, 0, 0);
 
         /* Drive Motor Characterization Values */
-        public static final double driveKS = (0 / 12); //divide by 12 to convert from volts to percent output for CTRE
-        public static final double driveKV = (0 / 12);
-        public static final double driveKA = (0 / 12);
-        public static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
+        public static final double driveKs = (0 / 12); //divide by 12 to convert from volts to percent output for CTRE
+        public static final double driveKv = (0 / 12);
+        public static final double driveKa = (0 / 12);
+        public static final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(Constants.Swerve.driveKs, Constants.Swerve.driveKv, Constants.Swerve.driveKa);
 
         /* Swerve Profiling Values */
         public static final double maxSpeed = 4.5; //meters per second
@@ -93,8 +89,8 @@ public final class Constants {
         public static final boolean canCoderInvert = false;
 
         /* Module Specific Constants */
-        /* Front Left Module - Module 0 */
-        public static final class Mod0 {
+        /** Front Left Module - Module 0 */
+        public static final class FrontLeftModule {
             public static final int driveMotorID = 1;
             public static final int angleMotorID = 2;
             public static final int canCoderID = 1;
@@ -103,8 +99,8 @@ public final class Constants {
                 new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
         }
 
-        /* Front Right Module - Module 1 */
-        public static final class Mod1 {
+        /** Front Right Module - Module 1 */
+        public static final class FrontRightModule {
             public static final int driveMotorID = 3;
             public static final int angleMotorID = 4;
             public static final int canCoderID = 2;
@@ -113,8 +109,8 @@ public final class Constants {
                 new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
         }
         
-        /* Back Left Module - Module 2 */
-        public static final class Mod2 {
+        /** Back Left Module - Module 2 */
+        public static final class BackLeftModule {
             public static final int driveMotorID = 5;
             public static final int angleMotorID = 6;
             public static final int canCoderID = 3;
@@ -123,8 +119,8 @@ public final class Constants {
                 new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
         }
 
-        /* Back Right Module - Module 3 */
-        public static final class Mod3 {
+        /** Back Right Module - Module 3 */
+        public static final class BackRightModule {
             public static final int driveMotorID = 7;
             public static final int angleMotorID = 8;
             public static final int canCoderID = 4;
@@ -136,19 +132,19 @@ public final class Constants {
     }
 
     public static final class AutoConstants {
-        public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+        public static final double maxSpeedMetersPerSecond = 3;
+        public static final double maxAccelerationMetersPerSecondSquared = 3;
+        public static final double maxAngularSpeedRadiansPerSecond = Math.PI;
+        public static final double maxAngularSpeedRadiansPerSecondSquared = Math.PI;
     
-        public static final double kPXController = 1;
-        public static final double kPYController = 1;
-        public static final double kPThetaController = 1;
+        public static final PIDConfig xController = new PIDConfig(1, 0, 0);
+        public static final PIDConfig yController = new PIDConfig(1, 0, 0);
+        public static final PIDConfig thetaController = new PIDConfig(1, 0, 0);
     
         // Constraint for the motion profilied robot angle controller
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
             new TrapezoidProfile.Constraints(
-                kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+                maxAngularSpeedRadiansPerSecond, maxAngularSpeedRadiansPerSecondSquared);
       }
 
 }

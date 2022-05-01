@@ -1,6 +1,8 @@
 package frc.robot.autos;
 
+import frc.lib.util.PIDConfig;
 import frc.robot.Constants;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.Swerve;
 
 import java.util.List;
@@ -21,8 +23,8 @@ public class exampleAuto extends SequentialCommandGroup {
     public exampleAuto(Swerve swerveDrive){
         TrajectoryConfig config =
             new TrajectoryConfig(
-                    Constants.AutoConstants.kMaxSpeedMetersPerSecond,
-                    Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+                    Constants.AutoConstants.maxSpeedMetersPerSecond,
+                    Constants.AutoConstants.maxAccelerationMetersPerSecondSquared)
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.
@@ -36,9 +38,10 @@ public class exampleAuto extends SequentialCommandGroup {
                 new Pose2d(3, 0, new Rotation2d(0)),
                 config);
 
+        PIDConfig thetaConfig = AutoConstants.thetaController;        
         var thetaController =
             new ProfiledPIDController(
-                Constants.AutoConstants.kPThetaController, 0, 0, Constants.AutoConstants.kThetaControllerConstraints);
+                thetaConfig.getKp(), thetaConfig.getKi(),thetaConfig.getKd(), Constants.AutoConstants.kThetaControllerConstraints);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         SwerveControllerCommand swerveControllerCommand =
@@ -46,8 +49,8 @@ public class exampleAuto extends SequentialCommandGroup {
                 exampleTrajectory,
                 swerveDrive::getPose,
                 Constants.Swerve.swerveKinematics,
-                new PIDController(Constants.AutoConstants.kPXController, 0, 0),
-                new PIDController(Constants.AutoConstants.kPYController, 0, 0),
+                AutoConstants.xController.getController(Constants.loopPeriod),
+                AutoConstants.yController.getController(Constants.loopPeriod),
                 thetaController,
                 swerveDrive::setModuleStates,
                 swerveDrive);

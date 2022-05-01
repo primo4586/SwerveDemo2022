@@ -7,6 +7,8 @@ import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
 
+import frc.lib.util.PIDConfig;
+
 public final class CTREConfigs {
     public TalonFXConfiguration swerveAngleFXConfig;
     public TalonFXConfiguration swerveDriveFXConfig;
@@ -26,10 +28,11 @@ public final class CTREConfigs {
             Constants.Swerve.anglePeakCurrentLimit, 
             Constants.Swerve.anglePeakCurrentDuration);
 
-        swerveAngleFXConfig.slot0.kP = Constants.Swerve.angleKP;
-        swerveAngleFXConfig.slot0.kI = Constants.Swerve.angleKI;
-        swerveAngleFXConfig.slot0.kD = Constants.Swerve.angleKD;
-        swerveAngleFXConfig.slot0.kF = Constants.Swerve.angleKF;
+        PIDConfig anglePID = Constants.Swerve.anglePID;    
+        swerveAngleFXConfig.slot0.kP = anglePID.getKp();
+        swerveAngleFXConfig.slot0.kI = anglePID.getKi();
+        swerveAngleFXConfig.slot0.kD = anglePID.getKd();
+        swerveAngleFXConfig.slot0.kF = anglePID.getKf();
         swerveAngleFXConfig.supplyCurrLimit = angleSupplyLimit;
         swerveAngleFXConfig.initializationStrategy = SensorInitializationStrategy.BootToZero;
 
@@ -41,10 +44,11 @@ public final class CTREConfigs {
             Constants.Swerve.drivePeakCurrentLimit, 
             Constants.Swerve.drivePeakCurrentDuration);
 
-        swerveDriveFXConfig.slot0.kP = Constants.Swerve.driveKP;
-        swerveDriveFXConfig.slot0.kI = Constants.Swerve.driveKI;
-        swerveDriveFXConfig.slot0.kD = Constants.Swerve.driveKD;
-        swerveDriveFXConfig.slot0.kF = Constants.Swerve.driveKF;        
+        PIDConfig drivePID = Constants.Swerve.drivePID;    
+        swerveDriveFXConfig.slot0.kP = drivePID.getKp();
+        swerveDriveFXConfig.slot0.kI = drivePID.getKi();
+        swerveDriveFXConfig.slot0.kD = drivePID.getKd();
+        swerveDriveFXConfig.slot0.kF = drivePID.getKf();        
         swerveDriveFXConfig.supplyCurrLimit = driveSupplyLimit;
         swerveDriveFXConfig.initializationStrategy = SensorInitializationStrategy.BootToZero;
         swerveDriveFXConfig.openloopRamp = Constants.Swerve.openLoopRamp;
