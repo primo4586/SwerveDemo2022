@@ -8,6 +8,7 @@ import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
 
 import frc.lib.util.PIDConfig;
+import frc.robot.Constants.SwerveConstants;
 
 public final class CTREConfigs {
     public TalonFXConfiguration swerveAngleFXConfig;
@@ -23,12 +24,12 @@ public final class CTREConfigs {
 
         /* Swerve Angle Motor Configurations */
         SupplyCurrentLimitConfiguration angleSupplyLimit = new SupplyCurrentLimitConfiguration(
-            Constants.Swerve.angleEnableCurrentLimit, 
-            Constants.Swerve.angleContinuousCurrentLimit, 
-            Constants.Swerve.anglePeakCurrentLimit, 
-            Constants.Swerve.anglePeakCurrentDuration);
+            SwerveConstants.angleEnableCurrentLimit, 
+            SwerveConstants.angleContinuousCurrentLimit, 
+            SwerveConstants.anglePeakCurrentLimit, 
+            SwerveConstants.anglePeakCurrentDuration);
 
-        PIDConfig anglePID = Constants.Swerve.anglePID;    
+        PIDConfig anglePID = SwerveConstants.anglePID;    
         swerveAngleFXConfig.slot0.kP = anglePID.getKp();
         swerveAngleFXConfig.slot0.kI = anglePID.getKi();
         swerveAngleFXConfig.slot0.kD = anglePID.getKd();
@@ -39,25 +40,25 @@ public final class CTREConfigs {
 
         /* Swerve Drive Motor Configuration */
         SupplyCurrentLimitConfiguration driveSupplyLimit = new SupplyCurrentLimitConfiguration(
-            Constants.Swerve.driveEnableCurrentLimit, 
-            Constants.Swerve.driveContinuousCurrentLimit, 
-            Constants.Swerve.drivePeakCurrentLimit, 
-            Constants.Swerve.drivePeakCurrentDuration);
+            SwerveConstants.driveEnableCurrentLimit, 
+            SwerveConstants.driveContinuousCurrentLimit, 
+            SwerveConstants.drivePeakCurrentLimit, 
+            SwerveConstants.drivePeakCurrentDuration);
 
-        PIDConfig drivePID = Constants.Swerve.drivePID;    
+        PIDConfig drivePID = SwerveConstants.drivePID;    
         swerveDriveFXConfig.slot0.kP = drivePID.getKp();
         swerveDriveFXConfig.slot0.kI = drivePID.getKi();
         swerveDriveFXConfig.slot0.kD = drivePID.getKd();
         swerveDriveFXConfig.slot0.kF = drivePID.getKf();        
         swerveDriveFXConfig.supplyCurrLimit = driveSupplyLimit;
         swerveDriveFXConfig.initializationStrategy = SensorInitializationStrategy.BootToZero;
-        swerveDriveFXConfig.openloopRamp = Constants.Swerve.openLoopRamp;
-        swerveDriveFXConfig.closedloopRamp = Constants.Swerve.closedLoopRamp;
+        swerveDriveFXConfig.openloopRamp = SwerveConstants.openLoopRamp;
+        swerveDriveFXConfig.closedloopRamp = SwerveConstants.closedLoopRamp;
 
         
         /* Swerve CANCoder Configuration */
         swerveCanCoderConfig.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
-        swerveCanCoderConfig.sensorDirection = Constants.Swerve.canCoderInvert;
+        swerveCanCoderConfig.sensorDirection = SwerveConstants.canCoderInvert;
         swerveCanCoderConfig.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
         swerveCanCoderConfig.sensorTimeBase = SensorTimeBase.PerSecond;
 

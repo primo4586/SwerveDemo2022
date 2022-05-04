@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants;
 import frc.robot.subsystems.Swerve;
 import edu.wpi.first.wpilibj.Joystick;
@@ -46,8 +47,8 @@ public class TeleopSwerve extends CommandBase {
         xAxis = (Math.abs(xAxis) < Constants.stickDeadband) ? 0 : xAxis;
         rAxis = (Math.abs(rAxis) < Constants.stickDeadband) ? 0 : rAxis;
 
-        translation = new Translation2d(yAxis, xAxis).times(Constants.Swerve.maxSpeed);
-        rotation = rAxis * Constants.Swerve.maxAngularVelocity;
+        translation = new Translation2d(yAxis, xAxis).times(SwerveConstants.maxSpeed);
+        rotation = rAxis * SwerveConstants.maxAngularVelocity;
         swerveDrive.teleopDrive(translation, rotation, fieldRelative, openLoop);
     }
 }

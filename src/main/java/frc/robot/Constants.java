@@ -1,12 +1,20 @@
 package frc.robot;
 
+import java.util.List;
+import java.util.Map;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import frc.lib.paths.Path;
 import frc.lib.util.PIDConfig;
 import frc.lib.util.SwerveModuleConstants;
 
@@ -15,7 +23,7 @@ public final class Constants {
     public static final double loopPeriod = 0.02;
 
     // TODO: Update Physical Robot constants + ids, inverts and such.
-    public static final class Swerve {
+    public static final class SwerveConstants {
         public static final int pigeonID = 1;
         public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
 
@@ -59,7 +67,7 @@ public final class Constants {
         public static final double driveKs = (0 / 12); //divide by 12 to convert from volts to percent output for CTRE
         public static final double driveKv = (0 / 12);
         public static final double driveKa = (0 / 12);
-        public static final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(Constants.Swerve.driveKs, Constants.Swerve.driveKv, Constants.Swerve.driveKa);
+        public static final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(SwerveConstants.driveKs,SwerveConstants.driveKv, SwerveConstants.driveKa);
 
         /* Swerve Profiling Values */
         public static final double maxSpeed = 4.5; //meters per second
@@ -125,14 +133,26 @@ public final class Constants {
         public static final double maxAngularSpeedRadiansPerSecond = Math.PI;
         public static final double maxAngularSpeedRadiansPerSecondSquared = Math.PI;
     
+        /**
+         * These are SEPARATE from the Drive/Module PID Controllers, while the drive PID corrects errors from target velocity/setpoint for each motor,
+         * These controllers are used to calculate the target velocities based off errors from the current robot pose to the target pose.
+         * {@see FollowTrajectory} {@see HolonomicDriveController}
+         */
         public static final PIDConfig xController = new PIDConfig(1, 0, 0);
         public static final PIDConfig yController = new PIDConfig(1, 0, 0);
-        public static final PIDConfig thetaController = new PIDConfig(1, 0, 0);
+        public static final PIDConfig thetaControllerPID = new PIDConfig(1, 0, 0);
     
         // Constraint for the motion profilied robot angle controller
-        public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
+        public static final TrapezoidProfile.Constraints thetaControllerConstraints =
             new TrapezoidProfile.Constraints(
                 maxAngularSpeedRadiansPerSecond, maxAngularSpeedRadiansPerSecondSquared);
+
+        public static final ProfiledPIDController thetaController = 
+            new ProfiledPIDController(thetaControllerPID.getKp(), thetaControllerPID.getKi(),thetaControllerPID.getKd(), thetaControllerConstraints);   
+            
+        public static final TrajectoryConfig trajectoryConfig =
+            new TrajectoryConfig( maxSpeedMetersPerSecond, maxAccelerationMetersPerSecondSquared).setKinematics(SwerveConstants.swerveKinematics);    
       }
 
+    
 }
