@@ -50,14 +50,16 @@ public class TeleopSwerve extends CommandBase {
         xInput = (Math.abs(xInput) < Constants.stickDeadband) ? 0 : xInput;
         rotationInput = (Math.abs(rotationInput) < Constants.stickDeadband) ? 0 : rotationInput;
 
-        // Slew Rate Limiting (Limiting how big of a change can happen every second)
+        // Slew Rate Limiting (Limiting how big of a change in joystick inputs can happen every second)
         xInput = xLimiter.calculate(xInput);
         yInput = yLimiter.calculate(yInput);
-        rotationInput = rotationLimiter.calculate(xInput);
+        rotationInput = rotationLimiter.calculate(rotationInput);
         
-
+        // Calculates the movement of the robot on the X,Y plane, X being forward/backwards, and Y being left/right.
         translation = new Translation2d(yInput, xInput).times(Constants.Swerve.maxSpeed);
+        // Calculates the rotation movement.
         rotation = rotationInput * Constants.Swerve.maxAngularVelocity;
+
         swerveDrive.teleopDrive(translation, rotation, fieldRelative, true);
     }
 }
