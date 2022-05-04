@@ -15,6 +15,12 @@ public class Path {
     private Pose2d endPose;
     private List<Translation2d> interiorPoints;
 
+    /**
+     * Represents a path for a trajectory. Wrapper class to hold the values in a nice manner
+     * @param startPose Start position, where the robot starts at.
+     * @param interiorPoints Points between the start and end position we want to go through.
+     * @param endPose End position, where the robot should end at.
+     */
     public Path(Pose2d startPose, List<Translation2d> interiorPoints, Pose2d endPose) {
         this.startPose = startPose;
         this.interiorPoints = interiorPoints;
@@ -25,6 +31,11 @@ public class Path {
         this(startPose, new ArrayList<>(), endPose);
     }
 
+    /**
+     * Generates the path as a trajectory that you could use to follow the path.
+     * @param config Speed limits & kinematics.
+     * @return The generated trajectory.
+     */
     public Trajectory generateAsTrajectory(TrajectoryConfig config) {
         return TrajectoryGenerator.generateTrajectory(startPose, interiorPoints, endPose, config);
     }

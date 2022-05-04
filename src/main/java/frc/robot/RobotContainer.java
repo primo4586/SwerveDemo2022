@@ -55,6 +55,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     /* Driver Buttons */
+    // NOTE: Seems that a lot of teams have this just in case, but realistically this shouldn't be required during a match.
     zeroGyro.whenPressed(new InstantCommand(() -> swerveDrive.zeroGyro()));
   }
 

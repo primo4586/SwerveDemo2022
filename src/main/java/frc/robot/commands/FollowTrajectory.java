@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.autos;
+package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.lib.paths.Path;
 import frc.robot.Constants;
@@ -34,9 +34,11 @@ public class FollowTrajectory extends CommandBase {
     ProfiledPIDController thetaController = AutoConstants.thetaController;
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
+    // Generates the target speed & speed of rotation values given for a target pose from the current position of the robot
     holomnicPoseController = new HolonomicDriveController(AutoConstants.xController.getController(Constants.loopPeriod), 
                                               AutoConstants.yController.getController(Constants.loopPeriod), 
                                               thetaController);
+    holomnicPoseController.setEnabled(true);   // Enables the feedback part of it.                                      
 
     this.trajectory = trajectory;
     this.targetAngle = trajectory.getStates().get(trajectory.getStates().size() - 1).poseMeters.getRotation();
@@ -53,6 +55,7 @@ public class FollowTrajectory extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    // Reset to initial position, since that's where realistically the robot should be at when the command starts.
     swerveDrive.resetOdometry(trajectory.getInitialPose());
     timer.reset();
     timer.start();
@@ -76,13 +79,14 @@ public class FollowTrajectory extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     timer.stop();
+    holomnicPoseController.setEnabled(false);                                         
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     // We should be at the end position by the time the trajectory ends.
-    // alternatively, we could use HolomnicDriverController.atReference(), 
+    // NOTE: alternatively, we could use HolomnicDriverController.atReference(), 
     // but in case it isn't able to get close enough, it's better to end it after the trajectory finishes to save time on autonomous.
     return timer.hasElapsed(trajectory.getTotalTimeSeconds());
   }

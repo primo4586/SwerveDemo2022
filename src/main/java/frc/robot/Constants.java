@@ -1,25 +1,21 @@
 package frc.robot;
 
-import java.util.List;
-import java.util.Map;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import frc.lib.paths.Path;
 import frc.lib.util.PIDConfig;
 import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
     public static final double stickDeadband = 0.1;
+    // Loop period, how frequent the robot loop repeats itself, in seconds (every 20ms)
     public static final double loopPeriod = 0.02;
 
     // TODO: Update Physical Robot constants + ids, inverts and such.
@@ -27,19 +23,21 @@ public final class Constants {
         public static final int pigeonID = 1;
         public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
 
-        /* Drivetrain Constants */
-        
+        /* Drivetrain Constants (Physical Constants) */
         public static final double trackWidth = Units.inchesToMeters(21.73); 
         public static final double wheelBase = Units.inchesToMeters(21.73);
         public static final double wheelDiameter = Units.inchesToMeters(4); 
         public static final double wheelCircumference = wheelDiameter * Math.PI;
 
+        /* Ramping - how fast the motors are/can move from 0 speed to full speed */
         public static final double openLoopRamp = 0.25;
         public static final double closedLoopRamp = 0.0;
 
+        /* Gear Ratios */
         public static final double driveGearRatio = (8.14 / 1.0); //8.14:1
         public static final double angleGearRatio = (150 / 7) / 1.0; //150 / 7 : 1
 
+        /* Swerve Kinematics, essentialy the physical "outline" of the robot and where modules are placed relative to the robot center */
         public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
                 new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
                 new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
@@ -128,6 +126,7 @@ public final class Constants {
     }
 
     public static final class AutoConstants {
+        // Self-explanatory, Limits for speed (linear velocity) and speed of rotation (angular velocity)
         public static final double maxSpeedMetersPerSecond = 3;
         public static final double maxAccelerationMetersPerSecondSquared = 3;
         public static final double maxAngularSpeedRadiansPerSecond = Math.PI;
@@ -147,11 +146,13 @@ public final class Constants {
             new TrapezoidProfile.Constraints(
                 maxAngularSpeedRadiansPerSecond, maxAngularSpeedRadiansPerSecondSquared);
 
+        // Basically a PID controller that also uses the physical limits of the swerve (max speed & max acceleration) to not go over the maximum values
         public static final ProfiledPIDController thetaController = 
             new ProfiledPIDController(thetaControllerPID.getKp(), thetaControllerPID.getKi(),thetaControllerPID.getKd(), thetaControllerConstraints);   
-            
+        
+        // Limits the speeds the trajectory can generate, so it doesn't move over its max speed the robot can handle.    
         public static final TrajectoryConfig trajectoryConfig =
-            new TrajectoryConfig( maxSpeedMetersPerSecond, maxAccelerationMetersPerSecondSquared).setKinematics(SwerveConstants.swerveKinematics);    
+            new TrajectoryConfig(maxSpeedMetersPerSecond, maxAccelerationMetersPerSecondSquared);  
       }
 
     

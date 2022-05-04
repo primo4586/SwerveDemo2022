@@ -14,7 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.paths.Path;
 import frc.lib.paths.PathSelector;
-import frc.robot.autos.FollowTrajectory;
+import frc.robot.commands.FollowTrajectory;
 import frc.robot.subsystems.Swerve;
 
 /** Add your docs here. */
@@ -32,8 +32,10 @@ public class AutoContainer {
         return new FollowTrajectory(pathSelector.getPath(), swerveDrive);
     }
   
+    // Collection of paths that could be loaded in.
     public static final class Paths {
         
+        // Represent zero rotation and position. (e.g. 0,0 and 0 degrees)
         public static final Rotation2d zeroRotation = new Rotation2d();
         public static final Pose2d zeroPose = new Pose2d(0, 0, zeroRotation);
         
@@ -42,6 +44,7 @@ public class AutoContainer {
 
         public static final Path threeMeterSCurvePath = new Path(zeroPose, List.of(new Translation2d(1, 1), new Translation2d(2, -1)), new Pose2d(3, 0, zeroRotation));
 
+        // The option names that would show up in the dropbox selector, for each path.
         public static final Map<String, Path> pathSelectorEntries = Map.ofEntries(
             Map.entry("One Meter Forward", oneMeterForward),
             Map.entry("One Meter Backward", oneMeterBackward),

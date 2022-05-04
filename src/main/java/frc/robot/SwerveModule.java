@@ -46,14 +46,21 @@ public class SwerveModule {
         lastAngle = getState().angle.getDegrees();
     }
 
+    /**
+     * Drives the swerve module to be at the desired state
+     * @param desiredState The desired state the module should be in (speed and angle setpoints)
+     * @param isOpenLoop If we should use PID and FF or not.
+     */
     public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop){
         desiredState = CTREModuleState.optimize(desiredState, getState().angle); //Custom optimize command, since default WPILib optimize assumes continuous controller which CTRE is not
 
         if(isOpenLoop){
+            // If it's open loop, it means we don't use PID/FF, and we are not aiming for accuracy
             double percentOutput = desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed;
             mDriveMotor.set(ControlMode.PercentOutput, percentOutput);
         }
         else {
+            // Conversion from meter per second to falcon tick speeds.
             double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, SwerveConstants.wheelCircumference, SwerveConstants.driveGearRatio);
             mDriveMotor.set(ControlMode.Velocity, velocity, DemandType.ArbitraryFeedForward, feedforward.calculate(desiredState.speedMetersPerSecond));
         }
@@ -94,6 +101,10 @@ public class SwerveModule {
         return Rotation2d.fromDegrees(angleEncoder.getAbsolutePosition());
     }
 
+    /**
+     * Returns the state of the module (current velocity and angle) in a SwerveModuleState object
+     * @return SwerveModuleState object
+     */
     public SwerveModuleState getState(){
         double velocity = Conversions.falconToMPS(mDriveMotor.getSelectedSensorVelocity(), SwerveConstants.wheelCircumference, SwerveConstants.driveGearRatio);
         Rotation2d angle = Rotation2d.fromDegrees(Conversions.falconToDegrees(mAngleMotor.getSelectedSensorPosition(), SwerveConstants.angleGearRatio));
