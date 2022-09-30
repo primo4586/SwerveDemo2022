@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.TeleopSwerve;
 
 public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
@@ -35,6 +36,15 @@ public class Swerve extends SubsystemBase {
         };
     }
 
+    /**
+     * Drives the robot during teleop control.
+     * @see TeleopSwerve
+     * 
+     * @param translation Movement of the robot on the X & Y plane
+     * @param rotation Movement in rotation. 
+     * @param fieldRelative If the robot should move relative to the field or the robot.
+     * @param isOpenLoop If the robot should use PID & FF to correct itself and be more accurate 
+     */
     public void teleopDrive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
             SwerveConstants.swerveKinematics.toSwerveModuleStates(
@@ -49,7 +59,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getY(), 
                                     rotation)
                                 ); 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed); // Limits the speeds from exceeding the max module speed
 
 
         for(SwerveModule mod : mSwerveMods){

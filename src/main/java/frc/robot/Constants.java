@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -14,8 +15,18 @@ import frc.lib.util.PIDConfig;
 import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
+    // Sets a minimum for how much someone needs to push the joystick in order to make the robot move.
     public static final double stickDeadband = 0.1;
-    // Loop period, how frequent the robot loop repeats itself, in seconds (every 20ms)
+    /**
+     * SlewRateLimiters limit how big of changes can change in the input over an amount of time/second
+     * @see {https://docs.wpilib.org/en/stable/docs/software/advanced-controls/filters/slew-rate-limiter.html}
+     * TODO: Tune the slew rate limiter values / check if they are necessary and remove if not
+     */
+    public static final SlewRateLimiter X_LIMITER = new SlewRateLimiter(0.01);
+    public static final SlewRateLimiter Y_LIMITER = new SlewRateLimiter(0.01);
+    public static final SlewRateLimiter ROTATION_LIMITER = new SlewRateLimiter(0.1);
+
+
     public static final double loopPeriod = 0.02;
 
     // TODO: Update Physical Robot constants + ids, inverts and such.
