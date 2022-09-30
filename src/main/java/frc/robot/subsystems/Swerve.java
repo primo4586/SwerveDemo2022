@@ -22,11 +22,11 @@ public class Swerve extends SubsystemBase {
     public PigeonIMU gyro;
 
     public Swerve() {
-        gyro = new PigeonIMU(SwerveConstants.pigeonID);
+        gyro = new PigeonIMU(SwerveConstants.PIGEON_ID);
         gyro.configFactoryDefault();
         zeroGyro();
         
-        swerveOdometry = new SwerveDriveOdometry(SwerveConstants.swerveKinematics, getYaw());
+        swerveOdometry = new SwerveDriveOdometry(SwerveConstants.KINEMATICS, getYaw());
 
         mSwerveMods = new SwerveModule[] {
             new SwerveModule(0, SwerveConstants.FrontLeftModule.constants),
@@ -47,7 +47,7 @@ public class Swerve extends SubsystemBase {
      */
     public void teleopDrive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
-            SwerveConstants.swerveKinematics.toSwerveModuleStates(
+            SwerveConstants.KINEMATICS.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
                                     translation.getX(), 
                                     translation.getY(), 
@@ -59,7 +59,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getY(), 
                                     rotation)
                                 ); 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed); // Limits the speeds from exceeding the max module speed
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.MAX_SPEED); // Limits the speeds from exceeding the max module speed
 
 
         for(SwerveModule mod : mSwerveMods){
@@ -69,7 +69,7 @@ public class Swerve extends SubsystemBase {
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.maxSpeed); // Checks the modules don't exceed their max speed.
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.MAX_SPEED); // Checks the modules don't exceed their max speed.
         
         for(SwerveModule mod : mSwerveMods){
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
@@ -99,7 +99,7 @@ public class Swerve extends SubsystemBase {
     public Rotation2d getYaw() {
         double[] ypr = new double[3];
         gyro.getYawPitchRoll(ypr);
-        return (SwerveConstants.invertGyro) ? Rotation2d.fromDegrees(360 - ypr[0]) : Rotation2d.fromDegrees(ypr[0]);
+        return (SwerveConstants.INVERT_GYRO) ? Rotation2d.fromDegrees(360 - ypr[0]) : Rotation2d.fromDegrees(ypr[0]);
     }
 
     @Override

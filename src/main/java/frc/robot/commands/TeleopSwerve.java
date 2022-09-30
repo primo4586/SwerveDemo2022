@@ -57,9 +57,9 @@ public class TeleopSwerve extends CommandBase {
         rotationInput = rotationLimiter.calculate(rotationInput);
         
         // Calculates the movement of the robot on the X,Y plane, X being forward/backwards, and Y being left/right.
-        translation = new Translation2d(yInput, xInput).times(Constants.Swerve.maxSpeed);
+        translation = new Translation2d(yInput, xInput).times(SwerveConstants.MAX_SPEED);
         // Calculates the rotation movement.
-        rotation = rotationInput * Constants.Swerve.maxAngularVelocity;
+        rotation = rotationInput * SwerveConstants.MAX_ANGULAR_VELOCITY;
 
         swerveDrive.teleopDrive(translation, rotation, fieldRelative, true);
     }

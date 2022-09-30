@@ -41,7 +41,7 @@ public class RobotContainer {
     boolean openLoop = true;
     this.swerveDrive = swerveDrive;
 
-    swerveDrive.setDefaultCommand(new TeleopSwerve(swerveDrive, driver, translationAxis, strafeAxis, rotationAxis, fieldRelative, openLoop));
+    swerveDrive.setDefaultCommand(new TeleopSwerve(swerveDrive, driver, translationAxis, strafeAxis, rotationAxis, fieldRelative));
 
     // Configure the button bindings
     configureButtonBindings();

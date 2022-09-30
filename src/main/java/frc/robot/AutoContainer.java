@@ -25,7 +25,7 @@ public class AutoContainer {
 
     public AutoContainer(Swerve swerveDrive) {
         this.swerveDrive = swerveDrive;
-        pathSelector = new PathSelector(Paths.pathSelectorEntries, "Pathfollowing");
+        pathSelector = new PathSelector(Paths.PATH_SELECTOR_ENTRIES, "Pathfollowing");
     }
 
     public Command getSelectedCommand() {
@@ -36,19 +36,19 @@ public class AutoContainer {
     public static final class Paths {
         
         // Represent zero rotation and position. (e.g. 0,0 and 0 degrees)
-        public static final Rotation2d zeroRotation = new Rotation2d();
-        public static final Pose2d zeroPose = new Pose2d(0, 0, zeroRotation);
+        public static final Rotation2d ZERO_ROTATION = new Rotation2d();
+        public static final Pose2d ZERO_POSE = new Pose2d(0, 0, ZERO_ROTATION);
         
-        public static final Path oneMeterForward = new Path(zeroPose, new Pose2d(1, 0, new Rotation2d()));
-        public static final Path oneMeterBackward = new Path(zeroPose, new Pose2d(-1, 0, new Rotation2d()));
+        public static final Path ONE_METER_FORWARD = new Path(ZERO_POSE, new Pose2d(1, 0, new Rotation2d()));
+        public static final Path ONE_METER_BACKWARD = new Path(ZERO_POSE, new Pose2d(-1, 0, new Rotation2d()));
 
-        public static final Path threeMeterSCurvePath = new Path(zeroPose, List.of(new Translation2d(1, 1), new Translation2d(2, -1)), new Pose2d(3, 0, zeroRotation));
+        public static final Path THREE_METER_S_CURVE = new Path(ZERO_POSE, List.of(new Translation2d(1, 1), new Translation2d(2, -1)), new Pose2d(3, 0, ZERO_ROTATION));
 
         // The option names that would show up in the dropbox selector, for each path.
-        public static final Map<String, Path> pathSelectorEntries = Map.ofEntries(
-            Map.entry("One Meter Forward", oneMeterForward),
-            Map.entry("One Meter Backward", oneMeterBackward),
-            Map.entry("Three Meter S Curve", threeMeterSCurvePath)
+        public static final Map<String, Path> PATH_SELECTOR_ENTRIES = Map.ofEntries(
+            Map.entry("One Meter Forward", ONE_METER_FORWARD),
+            Map.entry("One Meter Backward", ONE_METER_BACKWARD),
+            Map.entry("Three Meter S Curve", THREE_METER_S_CURVE)
         );
 
        

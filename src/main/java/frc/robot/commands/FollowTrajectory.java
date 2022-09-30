@@ -31,12 +31,12 @@ public class FollowTrajectory extends CommandBase {
   
   public FollowTrajectory(Trajectory trajectory, Swerve swerveDrive) {
 
-    ProfiledPIDController thetaController = AutoConstants.thetaController;
+    ProfiledPIDController thetaController = AutoConstants.THETA_CONTROLLER;
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Generates the target speed & speed of rotation values given for a target pose from the current position of the robot
-    holomnicPoseController = new HolonomicDriveController(AutoConstants.xController.getController(Constants.loopPeriod), 
-                                              AutoConstants.yController.getController(Constants.loopPeriod), 
+    holomnicPoseController = new HolonomicDriveController(AutoConstants.X_CONFIG.getController(Constants.loopPeriod), 
+                                              AutoConstants.Y_CONFIG.getController(Constants.loopPeriod), 
                                               thetaController);
     holomnicPoseController.setEnabled(true);   // Enables the feedback part of it.                                      
 
@@ -49,7 +49,7 @@ public class FollowTrajectory extends CommandBase {
   }
 
   public FollowTrajectory(Path path, Swerve swerveDrive) {
-    this(path.generateAsTrajectory(AutoConstants.trajectoryConfig),swerveDrive);
+    this(path.generateAsTrajectory(AutoConstants.TRAJECTORY_CONFIG),swerveDrive);
   }
 
   // Called when the command is initially scheduled.
@@ -71,7 +71,7 @@ public class FollowTrajectory extends CommandBase {
     ChassisSpeeds targetSpeeds = holomnicPoseController.calculate(swerveDrive.getPose(), targetState, targetAngle);
     
     // Then convert it to module states -> the target speed and angle each module has to be in, in order to get to that target state, and apply it to the motors.
-    SwerveModuleState[] desiredStates = SwerveConstants.swerveKinematics.toSwerveModuleStates(targetSpeeds);
+    SwerveModuleState[] desiredStates = SwerveConstants.KINEMATICS.toSwerveModuleStates(targetSpeeds);
     swerveDrive.setModuleStates(desiredStates);
   }
 
