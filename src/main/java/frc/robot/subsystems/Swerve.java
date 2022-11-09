@@ -1,13 +1,14 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.sensors.PigeonIMU;
-
 import frc.robot.SwerveModule;
 import frc.robot.Constants.SwerveConstants;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+
+import com.ctre.phoenix.sensors.PigeonIMU;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,11 +30,12 @@ public class Swerve extends SubsystemBase {
         swerveOdometry = new SwerveDriveOdometry(SwerveConstants.KINEMATICS, getYaw());
 
         mSwerveMods = new SwerveModule[] {
-            new SwerveModule(0, SwerveConstants.FrontLeftModule.constants),
-            new SwerveModule(1, SwerveConstants.FrontRightModule.constants),
-            new SwerveModule(2, SwerveConstants.BackLeftModule.constants),
-            new SwerveModule(3, SwerveConstants.BackRightModule.constants)
+            new SwerveModule(0, SwerveConstants.FrontLeftModule.CONSTANTS),
+            new SwerveModule(1, SwerveConstants.FrontRightModule.CONSTANTS),
+            new SwerveModule(2, SwerveConstants.BackLeftModule.CONSTANTS),
+            new SwerveModule(3, SwerveConstants.BackRightModule.CONSTANTS)
         };
+      
     }
 
     /**

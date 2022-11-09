@@ -38,7 +38,6 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(Swerve swerveDrive) {
     boolean fieldRelative = true;
-    boolean openLoop = true;
     this.swerveDrive = swerveDrive;
 
     swerveDrive.setDefaultCommand(new TeleopSwerve(swerveDrive, driver, translationAxis, strafeAxis, rotationAxis, fieldRelative));

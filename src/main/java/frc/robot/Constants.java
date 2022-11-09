@@ -35,8 +35,11 @@ public final class Constants {
         public static final boolean INVERT_GYRO = false; // Always ensure Gyro is CCW+ CW-
 
         /* Drivetrain Constants (Physical Constants) */
+        /** Distance between the left and right modules wheels */
         public static final double TRACKWIDTH = Units.inchesToMeters(21.73); 
-        public static final double WHEEL_BASE = Units.inchesToMeters(21.73);
+        /** Distance between the front and rear module wheels */
+        public static final double WHEEL_BASE = Units.inchesToMeters(21.73); 
+        /** "קוטר" */
         public static final double WHEEL_DIAMETER = Units.inchesToMeters(4); 
         public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
 
@@ -48,7 +51,12 @@ public final class Constants {
         public static final double DRIVE_GEAR_RATIO = (8.14 / 1.0); //8.14:1
         public static final double ANGLE_GEAR_RATIO = (150 / 7) / 1.0; //150 / 7 : 1
 
-        /* Swerve Kinematics, essentialy the physical "outline" of the robot and where modules are placed relative to the robot center */
+        /** 
+         * Swerve Kinematics, essentialy the physical "outline" of the robot and where modules are placed relative to the robot center 
+         * while, Positive X is towards the direction of the robot (front of the robot) and Positive Y is to the left side of the robot.
+         * @see {https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html}
+         * (Order is Front Left, Front Right, Back Left, Back Right)
+         */
         public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
                 new Translation2d(WHEEL_BASE / 2.0, TRACKWIDTH / 2.0),
                 new Translation2d(WHEEL_BASE / 2.0, -TRACKWIDTH / 2.0),
@@ -100,7 +108,7 @@ public final class Constants {
             public static final int ANGLE_MOTOR_ID = 2;
             public static final int CANCODER_ID = 1;
             public static final double ANGLE_OFFSET = 0;
-            public static final SwerveModuleConstants constants = 
+            public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
 
@@ -110,7 +118,7 @@ public final class Constants {
             public static final int ANGLE_MOTOR_ID = 4;
             public static final int CANCODER_ID = 2;
             public static final double ANGLE_OFFSET = 0;
-            public static final SwerveModuleConstants constants = 
+            public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
         
@@ -120,7 +128,7 @@ public final class Constants {
             public static final int ANGLE_MOTOR_ID = 6;
             public static final int CANCODER_ID = 3;
             public static final double ANGLE_OFFSET = 0;
-            public static final SwerveModuleConstants constants = 
+            public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
 
@@ -130,7 +138,7 @@ public final class Constants {
             public static final int ANGLE_MOTOR_ID = 8;
             public static final int CANCODER_ID = 4;
             public static final double ANGLE_OFFSET = 0;
-            public static final SwerveModuleConstants constants = 
+            public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
 
@@ -145,7 +153,8 @@ public final class Constants {
     
         /**
          * These are SEPARATE from the Drive/Module PID Controllers, while the drive PID corrects errors from target velocity/setpoint for each motor,
-         * These controllers are used to calculate the target velocities based off errors from the current robot pose to the target pose.
+         * These controllers are used to calculate the target velocities based off errors from the current robot pose to the target pose. (in trajectories)
+         * Essentially changes what should be the target velocity be given to each motor, giving the pose error from where we are, to the next trajectory pose.
          * {@see FollowTrajectory} {@see HolonomicDriveController}
          */
         public static final PIDConfig X_CONFIG = new PIDConfig(1, 0, 0);

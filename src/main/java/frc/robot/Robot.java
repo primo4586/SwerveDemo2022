@@ -21,7 +21,7 @@ public class Robot extends TimedRobot {
   private Command autonomousCommand;
 
   private RobotContainer robotContainer;
-  private AutoContainer autoCotainer;
+  private AutoContainer autoContainer;
 
   private Swerve swerveDrive;
 
@@ -35,7 +35,7 @@ public class Robot extends TimedRobot {
     swerveDrive = new Swerve();
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    autoCotainer = new AutoContainer(swerveDrive);
+    autoContainer = new AutoContainer(swerveDrive);
     robotContainer = new RobotContainer(swerveDrive);
   }
 
@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    autonomousCommand = autoCotainer.getSelectedCommand();
+    autonomousCommand = autoContainer.getSelectedCommand();
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {

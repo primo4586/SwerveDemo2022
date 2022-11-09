@@ -17,6 +17,7 @@ public class CTREModuleState {
     double targetAngle = placeInAppropriate0To360Scope(currentAngle.getDegrees(), desiredState.angle.getDegrees());
     double targetSpeed = desiredState.speedMetersPerSecond;
     double delta = targetAngle - currentAngle.getDegrees();
+    
     if (Math.abs(delta) > 90){
         targetSpeed = -targetSpeed;
         targetAngle = delta > 90 ? (targetAngle -= 180) : (targetAngle += 180);
@@ -28,11 +29,15 @@ public class CTREModuleState {
      * @param scopeReference Current Angle
      * @param newAngle Target Angle
      * @return Closest angle within scope
+     * Because CTRE isn't a continous controller (If you'd command it to 1 from 360, it would try to do a 361 degree turn, instead of a 1 degree turn)
+     * Essentially, the position mode controller doesn't see 0 and 360 as the same point, hence why we need to change it to the 
+     * "appropriate" range for CTRE onboard control.
      */
     private static double placeInAppropriate0To360Scope(double scopeReference, double newAngle) {
       double lowerBound;
       double upperBound;
-      double lowerOffset = scopeReference % 360;
+      double lowerOffset = scopeReference % 360; // If the angle is 360 degrees, we know it's the same as 0. which what modulo does.
+
       if (lowerOffset >= 0) {
           lowerBound = scopeReference - lowerOffset;
           upperBound = scopeReference + (360 - lowerOffset);
@@ -46,6 +51,8 @@ public class CTREModuleState {
       while (newAngle > upperBound) {
           newAngle -= 360;
       }
+
+      // If the new target angle is more than 180 degrees away from one another, we should flip it.
       if (newAngle - scopeReference > 180) {
           newAngle -= 360;
       } else if (newAngle - scopeReference < -180) {
