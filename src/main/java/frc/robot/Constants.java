@@ -88,8 +88,8 @@ public final class Constants {
         public static final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(SwerveConstants.DRIVE_KS,SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA);
 
         /* Swerve Profiling Values */
-        public static final double MAX_SPEED = 4.5; //meters per second
-        public static final double MAX_ANGULAR_VELOCITY = 11.5;
+        public static final double MAX_SPEED = 4; //meters per second
+        public static final double MAX_ANGULAR_VELOCITY = 5;
 
         /* Neutral Modes */
         public static final NeutralMode ANGLE_NEUTRAL = NeutralMode.Coast;
@@ -97,7 +97,7 @@ public final class Constants {
 
         /* Motor Inverts */
         public static final boolean DRIVE_MOTOR_INVERT = false;
-        public static final boolean ANGLE_MOTOR_INVERT = false;
+        public static final boolean ANGLE_MOTOR_INVERT = true;
 
         /* Angle Encoder Invert */
         public static final boolean CANCODER_INVERT = false;
@@ -105,40 +105,40 @@ public final class Constants {
         /* Module Specific Constants */
         /** Front Left Module - Module 0 */
         public static final class FrontLeftModule {
-            public static final int DRIVE_MOTOR_ID = 1;
-            public static final int ANGLE_MOTOR_ID = 2;
-            public static final int CANCODER_ID = 1;
-            public static final double ANGLE_OFFSET = 0;
+            public static final int DRIVE_MOTOR_ID = 20;
+            public static final int ANGLE_MOTOR_ID = 15;
+            public static final int CANCODER_ID = 14;
+            public static final double ANGLE_OFFSET = 315.791015625;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
 
         /** Front Right Module - Module 1 */
         public static final class FrontRightModule {
-            public static final int DRIVE_MOTOR_ID = 3;
-            public static final int ANGLE_MOTOR_ID = 4;
-            public static final int CANCODER_ID = 2;
-            public static final double ANGLE_OFFSET = 0;
+            public static final int DRIVE_MOTOR_ID = 0;
+            public static final int ANGLE_MOTOR_ID = 10;
+            public static final int CANCODER_ID = 13;
+            public static final double ANGLE_OFFSET = 326.42578125;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
         
         /** Back Left Module - Module 2 */
         public static final class BackLeftModule {
-            public static final int DRIVE_MOTOR_ID = 5;
-            public static final int ANGLE_MOTOR_ID = 6;
-            public static final int CANCODER_ID = 3;
-            public static final double ANGLE_OFFSET = 0;
+            public static final int DRIVE_MOTOR_ID = 8;
+            public static final int ANGLE_MOTOR_ID = 7;
+            public static final int CANCODER_ID = 11;
+            public static final double ANGLE_OFFSET = 306.2109375;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
 
         /** Back Right Module - Module 3 */
         public static final class BackRightModule {
-            public static final int DRIVE_MOTOR_ID = 7;
-            public static final int ANGLE_MOTOR_ID = 8;
-            public static final int CANCODER_ID = 4;
-            public static final double ANGLE_OFFSET = 0;
+            public static final int DRIVE_MOTOR_ID = 2;
+            public static final int ANGLE_MOTOR_ID = 9;
+            public static final int CANCODER_ID = 0;
+            public static final double ANGLE_OFFSET = 256.025390625;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET);
         }
