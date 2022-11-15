@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,7 +24,7 @@ public class Swerve extends SubsystemBase {
     public PigeonIMU gyro;
 
     public Swerve() {
-        gyro = new PigeonIMU(SwerveConstants.PIGEON_ID);
+        gyro = new PigeonIMU(new TalonSRX(SwerveConstants.PIGEON_ID));
         gyro.configFactoryDefault();
         zeroGyro();
         
@@ -114,5 +115,6 @@ public class Swerve extends SubsystemBase {
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
         }
+        SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
     }
 }

@@ -31,7 +31,7 @@ public final class Constants {
 
     // TODO: Update Physical Robot constants + ids, inverts and such.
     public static final class SwerveConstants {
-        public static final int PIGEON_ID = 1;
+        public static final int PIGEON_ID = 3;
         public static final boolean INVERT_GYRO = false; // Always ensure Gyro is CCW+ CW-
 
         /* Drivetrain Constants (Physical Constants) */
