@@ -63,4 +63,9 @@ public class TeleopSwerve extends CommandBase {
 
         swerveDrive.teleopDrive(translation, rotation, fieldRelative, true);
     }
+
+    @Override
+    public void end(boolean interrupted) {
+        swerveDrive.stopModules();
+    }
 }

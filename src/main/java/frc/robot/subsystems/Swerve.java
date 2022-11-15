@@ -7,6 +7,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 
+import javax.swing.plaf.TreeUI;
+
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
@@ -66,6 +68,7 @@ public class Swerve extends SubsystemBase {
 
 
         for(SwerveModule mod : mSwerveMods){
+            SmartDashboard.putNumber("Module " + mod.moduleNumber + " Angle Setpoint", swerveModuleStates[mod.moduleNumber].angle.getDegrees());
             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
     }    
@@ -113,8 +116,14 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule mod : mSwerveMods){
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + "Vel",mod.getState().speedMetersPerSecond);
         }
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
+    }
+
+    public void stopModules() {
+        for(SwerveModule module : mSwerveMods) {
+            module.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), true);
+        }
     }
 }

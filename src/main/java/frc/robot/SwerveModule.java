@@ -3,12 +3,15 @@ package frc.robot;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.math.Conversions;
 import frc.lib.util.CTREModuleState;
 import frc.lib.util.SwerveModuleConstants;
 import frc.robot.Constants.SwerveConstants;
 
+import javax.sound.midi.Soundbank;
+
+import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -24,11 +27,13 @@ public class SwerveModule {
     private double lastAngle;
 
     private SimpleMotorFeedforward feedforward;
+    private SwerveModuleConstants constants;
 
     public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants){
         this.moduleNumber = moduleNumber;
         angleOffset = moduleConstants.angleOffset;
         feedforward = SwerveConstants.driveFeedforward;
+        this.constants = moduleConstants;
 
         
         /* Angle Encoder Config */
@@ -73,7 +78,8 @@ public class SwerveModule {
 
     private void resetToAbsolute(){
         double absolutePosition = Conversions.degreesToFalcon(getCanCoder().getDegrees() - angleOffset, SwerveConstants.ANGLE_GEAR_RATIO);
-        mAngleMotor.setSelectedSensorPosition(absolutePosition);
+        System.out.println("Absolute Position: " + (moduleNumber + ": ") +(getCanCoder().getDegrees() - angleOffset));
+        ErrorCode code = mAngleMotor.setSelectedSensorPosition(absolutePosition);
     }
 
     private void configAngleEncoder(){        
@@ -92,7 +98,7 @@ public class SwerveModule {
     private void configDriveMotor(){        
         mDriveMotor.configFactoryDefault();
         mDriveMotor.configAllSettings(Robot.ctreConfigs.swerveDriveFXConfig);
-        mDriveMotor.setInverted(SwerveConstants.DRIVE_MOTOR_INVERT);
+        mDriveMotor.setInverted(constants.driveInvert);
         mDriveMotor.setNeutralMode(SwerveConstants.DRIVE_NEUTRAL);
         mDriveMotor.setSelectedSensorPosition(0);
     }
