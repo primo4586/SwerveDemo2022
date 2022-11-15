@@ -35,12 +35,13 @@ public final class Constants {
         public static final boolean INVERT_GYRO = false; // Always ensure Gyro is CCW+ CW-
 
         /* Drivetrain Constants (Physical Constants) */
-        /** Distance between the left and right modules wheels */
-        public static final double TRACKWIDTH = Units.inchesToMeters(21.73); 
-        /** Distance between the front and rear module wheels */
-        public static final double WHEEL_BASE = Units.inchesToMeters(21.73); 
+        /** Distance between the left and right modules wheels (in meters) */
+        public static final double TRACKWIDTH = 0.61;
+        /** Distance between the front and rear module wheels (in meters) */
+        public static final double WHEEL_BASE = 0.61;
         /** "קוטר" */
-        public static final double WHEEL_DIAMETER = Units.inchesToMeters(4); 
+        public static final double WHEEL_DIAMETER = Units.inchesToMeters(3.9); 
+        /** "היקף" */
         public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
 
         /* Ramping - how fast the motors are/can move from 0 speed to full speed */
@@ -49,7 +50,7 @@ public final class Constants {
 
         /* Gear Ratios */
         public static final double DRIVE_GEAR_RATIO = (8.14 / 1.0); //8.14:1
-        public static final double ANGLE_GEAR_RATIO = (150 / 7) / 1.0; //150 / 7 : 1
+        public static final double ANGLE_GEAR_RATIO = (150 / 7) / 1.0; // (150 / 7) : 1
 
         /** 
          * Swerve Kinematics, essentialy the physical "outline" of the robot and where modules are placed relative to the robot center 
