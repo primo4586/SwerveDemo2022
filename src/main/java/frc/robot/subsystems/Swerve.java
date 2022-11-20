@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import frc.robot.Constants;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.SwerveConstants;
 
@@ -52,7 +53,7 @@ public class Swerve extends SubsystemBase {
      */
     public void teleopDrive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
-            SwerveConstants.KINEMATICS.toSwerveModuleStates(
+            Constants.SwerveConstants.KINEMATICS.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
                                     translation.getX(), 
                                     translation.getY(), 
@@ -63,14 +64,13 @@ public class Swerve extends SubsystemBase {
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation)
-                                ); 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.MAX_SPEED); // Limits the speeds from exceeding the max module speed
+                                );
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.MAX_SPEED);
 
-
-        for(SwerveModule mod : mSwerveMods){
-            SmartDashboard.putNumber("Module " + mod.moduleNumber + " Angle Setpoint", swerveModuleStates[mod.moduleNumber].angle.getDegrees());
-            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
-        }
+        //mSwerveMods[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
+         for(SwerveModule mod : mSwerveMods){
+             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
+         }
     }    
 
     /* Used by SwerveControllerCommand in Auto */
@@ -81,6 +81,10 @@ public class Swerve extends SubsystemBase {
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
         }
     }    
+
+    public void setModuleStateRotation(int moduleNumber, double rotation) {
+        mSwerveMods[moduleNumber].setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(rotation)), true);
+    }
 
     public Pose2d getPose() {
         return swerveOdometry.getPoseMeters();
@@ -125,5 +129,8 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule module : mSwerveMods) {
             module.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), true);
         }
+    }
+
+    public void setStateForModule(int moduleNum, double x, double y, double rotation) {
     }
 }

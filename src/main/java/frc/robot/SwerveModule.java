@@ -71,6 +71,10 @@ public class SwerveModule {
         }
         
         //Prevent rotating module if speed is less then 1%. Prevents Jittering.
+        
+        if(isOpenLoop){
+            SmartDashboard.putNumber("Module " + moduleNumber + " Angle Error: ", desiredState.angle.getDegrees() - getState().angle.getDegrees());
+        }
         double angle = (Math.abs(desiredState.speedMetersPerSecond) <= (SwerveConstants.MAX_SPEED * 0.01)) ? lastAngle : desiredState.angle.getDegrees(); 
         mAngleMotor.set(ControlMode.Position, Conversions.degreesToFalcon(angle, SwerveConstants.ANGLE_GEAR_RATIO)); 
         lastAngle = angle;
@@ -78,8 +82,7 @@ public class SwerveModule {
 
     private void resetToAbsolute(){
         double absolutePosition = Conversions.degreesToFalcon(getCanCoder().getDegrees() - angleOffset, SwerveConstants.ANGLE_GEAR_RATIO);
-        System.out.println("Absolute Position: " + (moduleNumber + ": ") +(getCanCoder().getDegrees() - angleOffset));
-        ErrorCode code = mAngleMotor.setSelectedSensorPosition(absolutePosition);
+        mAngleMotor.setSelectedSensorPosition(absolutePosition);
     }
 
     private void configAngleEncoder(){        

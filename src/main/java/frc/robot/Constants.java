@@ -76,10 +76,10 @@ public final class Constants {
         public static final boolean DRIVE_ENABLE_CURRENT_LIMIT = true;
 
         /* Angle Motor PID Values */
-       public static final PIDConfig ANGLE_PID = new PIDConfig(0.1, 0, 0,0);
+       public static final PIDConfig ANGLE_PID = new PIDConfig(0.125, 0, 0,0);
 
         /* Drive Motor PID Values */
-        public static final PIDConfig DRIVE_PID = new PIDConfig(0, 0, 0, 0);
+        public static final PIDConfig DRIVE_PID = new PIDConfig(0.1, 0, 0, 0);
 
         /* Drive Motor Characterization Values */
         public static final double DRIVE_KS = (0 / 12); //divide by 12 to convert from volts to percent output for CTRE
@@ -88,7 +88,7 @@ public final class Constants {
         public static final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(SwerveConstants.DRIVE_KS,SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA);
 
         /* Swerve Profiling Values */
-        public static final double MAX_SPEED = 1; // meters per second
+        public static final double MAX_SPEED = 3; // meters per second
         public static final double MAX_ANGULAR_VELOCITY = 1;
 
         /* Neutral Modes */
@@ -96,7 +96,7 @@ public final class Constants {
         public static final NeutralMode DRIVE_NEUTRAL = NeutralMode.Brake;
 
         /* Motor Inverts */
-        public static final boolean DRIVE_MOTOR_INVERT = true;
+        public static final boolean DRIVE_MOTOR_INVERT = false;
         public static final boolean ANGLE_MOTOR_INVERT = true;
 
         /* Angle Encoder Invert */
@@ -108,8 +108,8 @@ public final class Constants {
             public static final int DRIVE_MOTOR_ID = 20;
             public static final int ANGLE_MOTOR_ID = 15;
             public static final int CANCODER_ID = 14;
-            public static final boolean DRIVE_INVERT = true;
-            public static final double ANGLE_OFFSET = 45.791015625;
+            public static final boolean DRIVE_INVERT = false;
+            public static final double ANGLE_OFFSET = 315.43; 
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET, DRIVE_INVERT);
         }
@@ -120,7 +120,7 @@ public final class Constants {
             public static final int ANGLE_MOTOR_ID = 10;
             public static final boolean DRIVE_INVERT = false;
             public static final int CANCODER_ID = 13;
-            public static final double ANGLE_OFFSET = 57.48046875; 
+            public static final double ANGLE_OFFSET = 325.8;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET, DRIVE_INVERT);
         }
@@ -131,7 +131,7 @@ public final class Constants {
             public static final boolean DRIVE_INVERT = false;
             public static final int ANGLE_MOTOR_ID = 7;
             public static final int CANCODER_ID = 11;
-            public static final double ANGLE_OFFSET = 36.2109375;
+            public static final double ANGLE_OFFSET = 306.562;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET,DRIVE_INVERT);
         }
@@ -139,10 +139,10 @@ public final class Constants {
         /** Back Right Module - Module 3 */
         public static final class BackRightModule {
             public static final int DRIVE_MOTOR_ID = 2;
-            public static final boolean DRIVE_INVERT = true;
+            public static final boolean DRIVE_INVERT = false;
             public static final int ANGLE_MOTOR_ID = 9;
             public static final int CANCODER_ID = 0;
-            public static final double ANGLE_OFFSET = 307.177734375;
+            public static final double ANGLE_OFFSET = 257.7;
             public static final SwerveModuleConstants CONSTANTS = 
                 new SwerveModuleConstants(DRIVE_MOTOR_ID, ANGLE_MOTOR_ID, CANCODER_ID, ANGLE_OFFSET, DRIVE_INVERT);
         }
