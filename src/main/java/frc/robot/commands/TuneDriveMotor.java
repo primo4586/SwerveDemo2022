@@ -51,7 +51,7 @@ public class TuneDriveMotor extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    swerve.stopModules();
+    module.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), false);    
   }
 
   // Returns true when the command should end.
