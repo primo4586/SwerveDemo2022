@@ -12,6 +12,7 @@ import frc.robot.Constants.Swerve;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
 
@@ -65,8 +66,8 @@ public class SwerveModule {
             // SmartDashboard.putNumber("Mod "+ moduleNumber + " PID Error: ", desiredState.angle.getDegrees() - getState().angle.getDegrees()); 
             SmartDashboard.putNumber("Mod "+ moduleNumber + " Desired Angle ", Conversions.falconToDegrees(desiredState.angle.getDegrees(), Constants.Swerve.angleGearRatio)); 
         } 
-        PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Current Speed").setNumber(getState().speedMetersPerSecond);
-        PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Setpoint ").setNumber(desiredState.speedMetersPerSecond);
+        // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Current Speed").setNumber(getState().speedMetersPerSecond);
+        // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Setpoint ").setNumber(desiredState.speedMetersPerSecond);
         lastAngle = angle;
     }
 
