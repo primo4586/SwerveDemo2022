@@ -58,7 +58,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
     /* Driver Buttons */
 
-    tuneDriveMotor.whenPressed(new TuneDriveMotor(s_Swerve));
+    // tuneDriveMotor.whenPressed(new TuneDriveMotor(s_Swerve));
     zeroGyro.whenPressed(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
     // zeroGyro.whileHeld(new RunCommand(() -> {
     //     s_Swerve.resetToAbsoluteModules();
