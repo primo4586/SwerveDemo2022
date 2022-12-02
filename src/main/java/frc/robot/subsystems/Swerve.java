@@ -101,6 +101,7 @@ public class Swerve extends SubsystemBase {
         swerveOdometry.resetPosition(pose, initalRotation);
         ErrorCode errorCode = gyro.setYaw(initalRotation.getDegrees());
         System.out.println(errorCode);
+        
     }
 
     public SwerveModuleState[] getStates(){

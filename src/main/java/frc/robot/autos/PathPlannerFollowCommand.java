@@ -11,6 +11,7 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
 import frc.robot.Constants.AutoConstants;
@@ -18,14 +19,14 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.*;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
+// information, see:`
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class PathPlannerFollowCommand extends SequentialCommandGroup {
   /** Creates a new PathPlannerFollowCommand. */
   public PathPlannerFollowCommand(Swerve swerve) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    PathPlannerTrajectory trajectory = PathPlanner.loadPath("One Meter Forward", AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
+    PathPlannerTrajectory trajectory = PathPlanner.loadPath("One Meter Sideways", AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
 
     
     var thetaController =
