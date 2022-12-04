@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,6 +24,7 @@ public class Swerve extends SubsystemBase {
     public SwerveModule[] mSwerveMods;
     public PigeonIMU gyro;
 
+    private Field2d field2d = new Field2d();
 
     public Swerve() {
         gyro = new PigeonIMU(new TalonSRX(Constants.SwerveConstants.pigeonID));
@@ -31,6 +33,8 @@ public class Swerve extends SubsystemBase {
         
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw());
 
+
+        SmartDashboard.putData(field2d);
         mSwerveMods = new SwerveModule[] {
             new SwerveModule(0, Constants.SwerveConstants.Mod0.constants),
             new SwerveModule(1, Constants.SwerveConstants.Mod1.constants),
@@ -67,6 +71,11 @@ public class Swerve extends SubsystemBase {
         }
     }
 
+    public void setRobotPose2D(Pose2d pose2d)
+    {
+        field2d.setRobotPose(pose2d);
+    }
+
     public SwerveModule getModule(int moduleNum) {
           return mSwerveMods[moduleNum];
     }
@@ -90,6 +99,10 @@ public class Swerve extends SubsystemBase {
     }   
     public Pose2d getPose() {
         return swerveOdometry.getPoseMeters();
+    }
+
+    public void setFieldTrajectory(String name, Trajectory trajectory) {
+        field2d.getObject(name).setTrajectory(trajectory);
     }
 
     public void resetOdometry(Pose2d pose) {
@@ -129,6 +142,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
+        field2d.setRobotPose(swerveOdometry.getPoseMeters());
         // for(SwerveModule mod : mSwerveMods){
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());

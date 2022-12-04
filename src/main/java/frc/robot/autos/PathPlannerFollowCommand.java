@@ -36,6 +36,8 @@ public class PathPlannerFollowCommand extends SequentialCommandGroup {
 
 
       System.out.println(trajectory.getInitialState().holonomicRotation);
+    swerve.setFieldTrajectory("traj", trajectory);
+      
     addCommands(
       new InstantCommand(() -> swerve.resetOdometryWithNewRotation(trajectory.getInitialPose(), trajectory.getInitialState().holonomicRotation), swerve),
       new PPSwerveControllerCommand(
