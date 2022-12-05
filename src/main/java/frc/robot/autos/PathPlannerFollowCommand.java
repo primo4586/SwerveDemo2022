@@ -40,7 +40,7 @@ public class PathPlannerFollowCommand extends SequentialCommandGroup {
       
     addCommands(
       new InstantCommand(() -> swerve.resetOdometryWithNewRotation(trajectory.getInitialPose(), trajectory.getInitialState().holonomicRotation), swerve),
-      new PPSwerveControllerCommand(
+      new LoggableFollowCommand(
         trajectory,
       () -> swerve.getPose(),
       SwerveConstants.swerveKinematics,
