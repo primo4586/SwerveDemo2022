@@ -52,7 +52,8 @@ public class SwerveModule {
 
         if(isOpenLoop){
             // double percentOutput = Math.signum(desiredState.speedMetersPerSecond ) * 0.;
-            double percentOutput = desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed;
+            double percentOutput = (desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed) * SwerveConstants.maxPercentSpeed;
+            SmartDashboard.putNumber("Module " + moduleNumber + " Percent Output", percentOutput);
             mDriveMotor.set(ControlMode.PercentOutput, percentOutput);
         }
         else {
@@ -64,8 +65,8 @@ public class SwerveModule {
         mAngleMotor.set(ControlMode.Position, Conversions.degreesToFalcon(angle, Constants.SwerveConstants.angleGearRatio));
         if(isOpenLoop) {
             // SmartDashboard.putNumber("Mod "+ moduleNumber + " PID Error: ", desiredState.angle.getDegrees() - getState().angle.getDegrees()); 
-            SmartDashboard.putNumber("Mod "+ moduleNumber + " Desired Angle ", Conversions.falconToDegrees(desiredState.angle.getDegrees(), Constants.SwerveConstants.angleGearRatio)); 
-        } 
+            SmartDashboard.putNumber("Mod "+ moduleNumber + " Desired Angle ",desiredState.angle.getDegrees()); 
+        }  
         // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Current Speed").setNumber(getState().speedMetersPerSecond);
         // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Setpoint ").setNumber(desiredState.speedMetersPerSecond);
         lastAngle = angle;

@@ -45,9 +45,9 @@ public final class Constants {
         public static final boolean driveEnableCurrentLimit = true;
 
         /* Angle Motor PID Values */
-        public static final double angleKP = 0.125;
+        public static final double angleKP = 0.4;
         public static final double angleKI = 0.0;
-        public static final double angleKD = 0.0;
+        public static final double angleKD = 0.005;
         public static final double angleKF = 0.0;
 
         /* Drive Motor PID Values */
@@ -63,7 +63,8 @@ public final class Constants {
 
         /* Swerve Profiling Values */
         public static final double maxSpeed = 3; //meters per second
-        public static final double maxAngularVelocity = 3;
+        public static final double maxAngularVelocity = 2.5;
+        public static final double maxPercentSpeed = 0.85;
 
         /* Neutral Modes */
         public static final NeutralMode angleNeutralMode = NeutralMode.Coast;

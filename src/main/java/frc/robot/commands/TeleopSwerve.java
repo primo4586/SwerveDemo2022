@@ -4,6 +4,7 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 import frc.robot.subsystems.Swerve;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -50,13 +51,21 @@ public class TeleopSwerve extends CommandBase {
         double xAxis = -controller.getRawAxis(strafeAxis);
         double rAxis = -controller.getRawAxis(rotationAxis);
         
-        /* Deadbands */
+        /* Deadbands */ 
         yAxis = (Math.abs(yAxis) < Constants.stickDeadband) ? 0 : yAxis;
-        xAxis = (Math.abs(xAxis) < Constants.stickDeadband) ? 0 : xAxis;
+        // yAxis = 0;
+        xAxis = 0;
+        
+        // xAxis = (Math.abs(xAxis) < Constants.stickDeadband) ? 0 : xAxis;
         rAxis = (Math.abs(rAxis) < Constants.stickDeadband) ? 0 : rAxis;
 
         translation = new Translation2d(yAxis, xAxis).times(Constants.SwerveConstants.maxSpeed);
+        SmartDashboard.putNumber("Translation Y", translation.getY());
+        SmartDashboard.putNumber("Translation X", translation.getX());
+
         rotation = rAxis * Constants.SwerveConstants.maxAngularVelocity;
+        SmartDashboard.putNumber("Rotation ", rotation);
+
         s_Swerve.drive(translation, rotation, fieldRelative, openLoop);
 
         // SwerveModuleState empty = new SwerveModuleState(0, Rotation2d.fromDegrees(0));
@@ -66,7 +75,7 @@ public class TeleopSwerve extends CommandBase {
     
    @Override
    public void end(boolean interrupted) {
-    // s_Swerve.stopModules();
+    s_Swerve.stopModules();
 }
 
    
