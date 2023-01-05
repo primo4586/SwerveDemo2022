@@ -43,6 +43,15 @@ public class Swerve extends SubsystemBase {
         };
     }
 
+     /**
+     * Drives the robot during teleop control.
+     * @see TeleopSwerve
+     * 
+     * @param translation Movement of the robot on the X & Y plane
+     * @param rotation Movement in rotation. 
+     * @param fieldRelative If the robot should move relative to the field or the robot.
+     * @param isOpenLoop If the robot should use PID & FF to correct itself and be more accurate 
+     */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
             Constants.SwerveConstants.swerveKinematics.toSwerveModuleStates(

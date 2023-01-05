@@ -28,6 +28,9 @@ public class CTREModuleState {
      * @param scopeReference Current Angle
      * @param newAngle Target Angle
      * @return Closest angle within scope
+     * Because CTRE isn't a continous controller (If you'd command it to 1 from 360, it would try to do a 361 degree turn, instead of a 1 degree turn)
+     * Essentially, the position mode controller doesn't see 0 and 360 as the same point, hence why we need to change it to the 
+     * "appropriate" range for CTRE onboard control.
      */
     private static double placeInAppropriate0To360Scope(double scopeReference, double newAngle) {
       double lowerBound;
