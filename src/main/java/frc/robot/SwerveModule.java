@@ -57,8 +57,8 @@ public class SwerveModule {
 
         if(isOpenLoop){
             // If it's open loop, it means we don't use PID/FF, and we are not aiming for accuracy
-            double percentOutput = desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed;
-            // double percentOutput = Math.signum(desiredState.speedMetersPerSecond ) * 0.;
+            // double percentOutput = desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed;
+            double percentOutput = (desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed) * Constants.SwerveConstants.maxPercentVelocity;
             mDriveMotor.set(ControlMode.PercentOutput, percentOutput);
         }
         else {
@@ -70,8 +70,9 @@ public class SwerveModule {
         double angle = (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.SwerveConstants.maxSpeed * 0.01)) ? lastAngle : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
         mAngleMotor.set(ControlMode.Position, Conversions.degreesToFalcon(angle, Constants.SwerveConstants.angleGearRatio));
         if(isOpenLoop) {
-            // SmartDashboard.putNumber("Mod "+ moduleNumber + " PID Error: ", desiredState.angle.getDegrees() - getState().angle.getDegrees()); 
-            SmartDashboard.putNumber("Mod "+ moduleNumber + " Desired Angle ", Conversions.falconToDegrees(desiredState.angle.getDegrees(), Constants.SwerveConstants.angleGearRatio)); 
+            SmartDashboard.putNumber("Mod " + moduleNumber + " Desired Velocity", desiredState.speedMetersPerSecond);
+            SmartDashboard.putNumber("Mod " + moduleNumber + " Current Velocity", getState().speedMetersPerSecond);
+            SmartDashboard.putNumber("Mod "+ moduleNumber + " Desired Angle ", desiredState.angle.getDegrees()); 
         } 
         // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Current Speed").setNumber(getState().speedMetersPerSecond);
         // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor Tuning").addEntry("Module Drive " + moduleNumber + " Setpoint ").setNumber(desiredState.speedMetersPerSecond);

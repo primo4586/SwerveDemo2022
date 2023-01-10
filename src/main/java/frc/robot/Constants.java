@@ -61,9 +61,11 @@ public final class Constants {
         public static final double driveKV = (2.6223 / 12);
         public static final double driveKA = (0.47062 / 12);
 
+
         /* Swerve Profiling Values */
         public static final double maxSpeed = 3; //meters per second
-        public static final double maxAngularVelocity = 3;
+        public static final double maxPercentVelocity = 0.85;
+        public static final double maxAngularVelocity = 5;
 
         /* Neutral Modes */
         public static final NeutralMode angleNeutralMode = NeutralMode.Coast;
