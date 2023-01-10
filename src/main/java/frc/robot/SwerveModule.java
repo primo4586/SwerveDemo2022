@@ -2,9 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.lib.PrimoShuffleboard;
 import frc.lib.math.Conversions;
 import frc.lib.util.CTREModuleState;
 import frc.lib.util.SwerveModuleConstants;
@@ -47,15 +47,22 @@ public class SwerveModule {
         lastAngle = getState().angle.getDegrees();
     }
 
+    /**
+     * Drives the swerve module to be at the desired state
+     * @param desiredState The desired state the module should be in (speed and angle setpoints)
+     * @param isOpenLoop If we should use PID and FF or not.
+     */
     public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop){
         desiredState = CTREModuleState.optimize(desiredState, getState().angle); //Custom optimize command, since default WPILib optimize assumes continuous controller which CTRE is not
 
         if(isOpenLoop){
-            // double percentOutput = Math.signum(desiredState.speedMetersPerSecond ) * 0.;
+            // If it's open loop, it means we don't use PID/FF, and we are not aiming for accuracy
             double percentOutput = desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed;
+            // double percentOutput = Math.signum(desiredState.speedMetersPerSecond ) * 0.;
             mDriveMotor.set(ControlMode.PercentOutput, percentOutput);
         }
         else {
+            // Conversion from meter per second to falcon tick speeds.
             double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, Constants.SwerveConstants.wheelCircumference, Constants.SwerveConstants.driveGearRatio);
             mDriveMotor.set(ControlMode.Velocity, velocity, DemandType.ArbitraryFeedForward, feedforward.calculate(desiredState.speedMetersPerSecond));
         }
@@ -101,6 +108,10 @@ public class SwerveModule {
         return Rotation2d.fromDegrees(angleEncoder.getAbsolutePosition());
     }
 
+    /**
+     * Returns the state of the module (current velocity and angle) in a SwerveModuleState object
+     * @return SwerveModuleState object
+     */
     public SwerveModuleState getState(){
         double velocity = Conversions.falconToMPS(mDriveMotor.getSelectedSensorVelocity(), Constants.SwerveConstants.wheelCircumference, Constants.SwerveConstants.driveGearRatio);
         Rotation2d angle = Rotation2d.fromDegrees(Conversions.falconToDegrees(mAngleMotor.getSelectedSensorPosition(), Constants.SwerveConstants.angleGearRatio));
@@ -110,5 +121,13 @@ public class SwerveModule {
     public double getOffset() {
         return constants.angleOffset;
     }
+
+    public double getMeterDistance() {
+        return Conversions.falconToMeters(mDriveMotor.getSelectedSensorPosition(), SwerveConstants.wheelCircumference, SwerveConstants.driveGearRatio);
+    }
     
+
+    public SwerveModulePosition getPostion() {
+        return new SwerveModulePosition(getMeterDistance(), getState().angle);
+    }
 }

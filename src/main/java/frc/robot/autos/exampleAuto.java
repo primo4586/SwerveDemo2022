@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 
 public class exampleAuto extends SequentialCommandGroup {
     public exampleAuto(Swerve s_Swerve){
+        
         TrajectoryConfig config =
             new TrajectoryConfig(
                     Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -32,7 +33,7 @@ public class exampleAuto extends SequentialCommandGroup {
                 PathHandler.getInstance().loadPath("output/funny.wpilib.json");
 
 
-                System.out.println("Trajectory length: " + exampleTrajectory.getTotalTimeSeconds());
+        System.out.println("Trajectory length: " + exampleTrajectory.getTotalTimeSeconds());
                 
 
         var thetaController =

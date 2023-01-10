@@ -119,6 +119,7 @@ public final class Constants {
     }
 
     public static final class AutoConstants {
+        // Self-explanatory, Limits for speed (linear velocity) and speed of rotation (angular velocity)
         public static final double kMaxSpeedMetersPerSecond = 3;
         public static final double kMaxAccelerationMetersPerSecondSquared = 1;
         public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
@@ -128,7 +129,7 @@ public final class Constants {
         public static final double kPYController = 1;
         public static final double kPThetaController = 1;
     
-        // Constraint for the motion profilied robot angle controller
+        // Basically a PID controller that also uses the physical limits of the swerve (max speed & max acceleration) to not go over the maximum values
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
             new TrapezoidProfile.Constraints(
                 kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
