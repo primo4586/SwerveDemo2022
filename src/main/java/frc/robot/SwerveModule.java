@@ -2,9 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.lib.PrimoShuffleboard;
 import frc.lib.math.Conversions;
 import frc.lib.util.CTREModuleState;
 import frc.lib.util.SwerveModuleConstants;
@@ -121,5 +121,13 @@ public class SwerveModule {
     public double getOffset() {
         return constants.angleOffset;
     }
+
+    public double getMeterDistance() {
+        return Conversions.falconToMeters(mDriveMotor.getSelectedSensorPosition(), SwerveConstants.wheelCircumference, SwerveConstants.driveGearRatio);
+    }
     
+
+    public SwerveModulePosition getPostion() {
+        return new SwerveModulePosition(getMeterDistance(), getState().angle);
+    }
 }
