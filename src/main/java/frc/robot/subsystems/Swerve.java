@@ -10,6 +10,7 @@ import frc.robot.Constants;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -31,9 +32,6 @@ public class Swerve extends SubsystemBase {
         gyro.configFactoryDefault();
         zeroGyro();
         
-        swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw());
-
-
         SmartDashboard.putData(field2d);
         mSwerveMods = new SwerveModule[] {
             new SwerveModule(0, Constants.SwerveConstants.Mod0.constants),
@@ -41,8 +39,19 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
             new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
         };
+
+        swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
     }
 
+     /**
+     * Drives the robot during teleop control.
+     * @see TeleopSwerve
+     * 
+     * @param translation Movement of the robot on the X & Y plane
+     * @param rotation Movement in rotation. 
+     * @param fieldRelative If the robot should move relative to the field or the robot.
+     * @param isOpenLoop If the robot should use PID & FF to correct itself and be more accurate 
+     */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
             Constants.SwerveConstants.swerveKinematics.toSwerveModuleStates(
@@ -106,16 +115,12 @@ public class Swerve extends SubsystemBase {
     }
 
     public void resetOdometry(Pose2d pose) {
-        swerveOdometry.resetPosition(pose, pose.getRotation()); 
-        gyro.setYaw(pose.getRotation().getDegrees());
+        swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
     }
     
-
     public void resetOdometryWithNewRotation(Pose2d pose, Rotation2d initalRotation) {
-        swerveOdometry.resetPosition(pose, initalRotation);
-        ErrorCode errorCode = gyro.setYaw(initalRotation.getDegrees());
-        System.out.println(errorCode);
-        
+        Pose2d newPose2d = new Pose2d(pose.getTranslation(), initalRotation);
+        swerveOdometry.resetPosition(getYaw(), getPositions(), newPose2d);
     }
 
     public SwerveModuleState[] getStates(){
@@ -138,7 +143,7 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic(){
-        swerveOdometry.update(getYaw(), getStates());  
+        swerveOdometry.update(getYaw(), getPositions());  
 
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
@@ -155,5 +160,14 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(mod.getOffset())), true);
         }
+    }
+
+    public SwerveModulePosition[] getPositions() {
+        return new SwerveModulePosition[] {
+            mSwerveMods[0].getPostion(),
+            mSwerveMods[1].getPostion(),
+            mSwerveMods[2].getPostion(),
+            mSwerveMods[3].getPostion(),            
+        };
     }
 }

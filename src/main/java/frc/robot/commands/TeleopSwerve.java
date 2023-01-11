@@ -59,9 +59,6 @@ public class TeleopSwerve extends CommandBase {
         rotation = rAxis * Constants.SwerveConstants.maxAngularVelocity;
         s_Swerve.drive(translation, rotation, fieldRelative, openLoop);
 
-        // SwerveModuleState empty = new SwerveModuleState(0, Rotation2d.fromDegrees(0));
-        // SwerveModuleState[] moduleStates = new SwerveModuleState[]{new SwerveModuleState(0, Rotation2d.fromDegrees(45)), empty, empty, empty};
-        // s_Swerve.setModuleStatesOpenLoop(moduleStates);
     }
     
    @Override

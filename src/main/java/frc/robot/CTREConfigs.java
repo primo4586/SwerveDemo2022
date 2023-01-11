@@ -7,6 +7,7 @@ import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
 
+// Builds & holds all static configurations for the module motors & cancoders
 public final class CTREConfigs {
     public TalonFXConfiguration swerveAngleFXConfig;
     public TalonFXConfiguration swerveDriveFXConfig;
