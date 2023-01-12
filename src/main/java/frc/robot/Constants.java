@@ -14,7 +14,7 @@ import frc.lib.util.SwerveModuleConstants;
 public final class Constants {
     public static final double stickDeadband = 0.1;
 
-    public static final class limeLightConstants{
+    public static final class LimelightConstants {
         public static final String cameraName = "LimeLight";
 
         static final Transform3d robotToCam =
