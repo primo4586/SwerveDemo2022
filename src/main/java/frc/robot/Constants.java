@@ -2,7 +2,10 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -10,6 +13,18 @@ import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
     public static final double stickDeadband = 0.1;
+
+    public static final class limeLightConstants{
+        public static final String cameraName = "LimeLight";
+
+        static final Transform3d robotToCam =
+                new Transform3d(
+                        new Translation3d(0.0, 0.0, 0.0),//לתקן ביחס לרובוט
+                        new Rotation3d(
+                                0, 0,
+                                0));
+    }
+
 
     public static final class SwerveConstants {
         public static final int pigeonID = 3;
