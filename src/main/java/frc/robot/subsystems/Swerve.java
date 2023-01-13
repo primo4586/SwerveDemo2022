@@ -77,6 +77,7 @@ public class Swerve extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.SwerveConstants.maxSpeed);
 
         //mSwerveMods[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
+        
          for(SwerveModule mod : mSwerveMods){
              mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
          }
@@ -157,11 +158,11 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
         field2d.setRobotPose(swerveOdometry.getPoseMeters());
-        // for(SwerveModule mod : mSwerveMods){
-        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
-        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
-        // }
+        for(SwerveModule mod : mSwerveMods){
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+        }
     }
 
     public void resetToAbsoluteModules() {
@@ -181,8 +182,8 @@ public class Swerve extends SubsystemBase {
 
     public Command testSpecificModule() {
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
-
-        NetworkTable table = inst.getTable("Shuffleboard").getSubTable("Module Testing");
+        System.out.println("test");
+        NetworkTable table = inst.getTable("Module Testing");
     
         IntegerSubscriber moduleNum = table.getIntegerTopic("Module Number").subscribe(0);
 

@@ -10,6 +10,7 @@ import frc.lib.util.CTREModuleState;
 import frc.lib.util.SwerveModuleConstants;
 import frc.robot.Constants.SwerveConstants;
 
+import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -35,13 +36,19 @@ public class SwerveModule {
         /* Angle Encoder Config */
         angleEncoder = new CANCoder(moduleConstants.cancoderID);
         configAngleEncoder();
+        configAngleEncoder();
+        configAngleEncoder();
 
         /* Angle Motor Config */
         mAngleMotor = new TalonFX(moduleConstants.angleMotorID);
         configAngleMotor();
+        configAngleMotor();
+        configAngleMotor();
 
         /* Drive Motor Config */
         mDriveMotor = new TalonFX(moduleConstants.driveMotorID);
+        configDriveMotor();
+        configDriveMotor();
         configDriveMotor();
 
         lastAngle = getState().angle.getDegrees();
@@ -83,25 +90,35 @@ public class SwerveModule {
         mAngleMotor.setSelectedSensorPosition(absolutePosition);
     }
 
-    private void configAngleEncoder(){        
-        angleEncoder.configFactoryDefault();
-        angleEncoder.configAllSettings(Robot.ctreConfigs.swerveCanCoderConfig);
+    private void configAngleEncoder(){     
+        ErrorCode code;   
+        code = angleEncoder.configFactoryDefault();
+        System.out.println("Module " + moduleNumber + " CANCoder Factory Default: " + code);
+        code = angleEncoder.configAllSettings(Robot.ctreConfigs.swerveCanCoderConfig);
+        System.out.println("Module " + moduleNumber + " CANCoder Settings: " + code);
     }
 
     private void configAngleMotor(){
-        mAngleMotor.configFactoryDefault();
-        mAngleMotor.configAllSettings(Robot.ctreConfigs.swerveAngleFXConfig);
+        ErrorCode code;
+        code = mAngleMotor.configFactoryDefault();
+        System.out.println("Module " + moduleNumber + " Angle Factory Default: " + code);
+        code = mAngleMotor.configAllSettings(Robot.ctreConfigs.swerveAngleFXConfig);
+        System.out.println("Module " + moduleNumber + " Angle Settings: " + code);
         mAngleMotor.setInverted(Constants.SwerveConstants.angleMotorInvert);
         mAngleMotor.setNeutralMode(Constants.SwerveConstants.angleNeutralMode);
         resetToAbsolute();
     }
 
-    private void configDriveMotor(){        
-        mDriveMotor.configFactoryDefault();
-        mDriveMotor.configAllSettings(Robot.ctreConfigs.swerveDriveFXConfig);
+    private void configDriveMotor(){  
+        ErrorCode code;      
+        code = mDriveMotor.configFactoryDefault();
+        System.out.println("Module " + moduleNumber + " Drive Factory Default: " + code);
+        code = mDriveMotor.configAllSettings(Robot.ctreConfigs.swerveDriveFXConfig);
+        System.out.println("Module " + moduleNumber + " Angle Settings: " + code);
         mDriveMotor.setInverted(constants.driveInvert);
         mDriveMotor.setNeutralMode(Constants.SwerveConstants.driveNeutralMode);
-        mDriveMotor.setSelectedSensorPosition(0);
+        code = mDriveMotor.setSelectedSensorPosition(0);
+        System.out.println("Module " + moduleNumber + " Drive Selected Sensor Position: " + code);
     }
 
     public Rotation2d getCanCoder(){
