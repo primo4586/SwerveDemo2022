@@ -16,8 +16,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
@@ -169,5 +177,27 @@ public class Swerve extends SubsystemBase {
             mSwerveMods[2].getPostion(),
             mSwerveMods[3].getPostion(),            
         };
+    }
+
+    public Command testSpecificModule() {
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
+        NetworkTable table = inst.getTable("Shuffleboard").getSubTable("Module Testing");
+    
+        IntegerSubscriber moduleNum = table.getIntegerTopic("Module Number").subscribe(0);
+
+        DoubleSubscriber speed = table.getDoubleTopic("Speed").subscribe(0);
+        DoubleSubscriber angle = table.getDoubleTopic("Angle").subscribe(0);
+        
+        return Commands.runEnd(
+        () -> {
+            Long num = moduleNum.get();
+            mSwerveMods[num.intValue()].setDesiredState(new SwerveModuleState(speed.get(), Rotation2d.fromDegrees(angle.get())), true);
+        }, 
+        () -> {
+            stopModules();
+        },
+        this);
+        
     }
 }

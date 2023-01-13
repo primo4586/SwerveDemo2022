@@ -34,6 +34,7 @@ public class RobotContainer {
   /* Driver Buttons */
   private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton tuneDriveMotor = new JoystickButton(driver, XboxController.Button.kX.value);
+  private final JoystickButton testModule = new JoystickButton(driver, XboxController.Button.kA.value);
 
   /* Subsystems */
   private final Swerve s_Swerve = new Swerve();
@@ -59,6 +60,8 @@ public class RobotContainer {
     /* Driver Buttons */
 
     // tuneDriveMotor.whenPressed(new TuneDriveMotor(s_Swerve));
+    testModule.whileTrue(s_Swerve.testSpecificModule());
+    
     zeroGyro.whenPressed(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
   }
 
