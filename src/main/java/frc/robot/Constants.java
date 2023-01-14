@@ -17,9 +17,9 @@ public final class Constants {
     public static final class LimelightConstants {
         public static final String cameraName = "LimeLight";
 
-        static final Transform3d robotToCam =
+        public static final Transform3d robotToCam =
                 new Transform3d(
-                        new Translation3d(0.0, 0.0, 0.0),//לתקן ביחס לרובוט
+                        new Translation3d(11.0, 0.0, 32.1),//לתקן ביחס לרובוט
                         new Rotation3d(
                                 0, 0,
                                 0));

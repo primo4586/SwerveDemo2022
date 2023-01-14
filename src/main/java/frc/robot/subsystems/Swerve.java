@@ -5,14 +5,18 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import frc.robot.SwerveModule;
+import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants;
-
+import frc.robot.PoseEstimate;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -24,6 +28,8 @@ public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveModule[] mSwerveMods;
     public PigeonIMU gyro;
+    private PoseEstimate poseEstimate;
+    
 
     private Field2d field2d = new Field2d();
 
@@ -39,8 +45,10 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
             new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
         };
+            new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), getPose());
 
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
+        //poseEstimate = new PoseEstimate();
     }
 
      /**
@@ -149,6 +157,10 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
         field2d.setRobotPose(swerveOdometry.getPoseMeters());
+        var estimateResult = poseEstimate.getEstimatedGlobalPose(getPose());
+        var camToTarget = estimateResult.getFirst();
+        var robotPose = camToTarget.transformBy(LimelightConstants.robotToCam.inverse());
+        System.out.println(robotPose.toPose2d());
         // for(SwerveModule mod : mSwerveMods){
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());

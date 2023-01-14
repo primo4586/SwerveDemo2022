@@ -24,7 +24,7 @@ public class PoseEstimate {
         
         AprilTagFieldLayout apriltagLayout;
         try {
-            apriltagLayout = AprilTagFieldLayout.loadFromResource("2023-chargedup.json");
+            apriltagLayout =new AprilTagFieldLayout("2023-chargedup.json");
             limeLight = new PhotonCamera(LimelightConstants.cameraName);
 
             var camList = new ArrayList<Pair<PhotonCamera, Transform3d>>();
@@ -42,16 +42,16 @@ public class PoseEstimate {
      * @param prevEstimatedRobotPose - The last estimated position to use as a reference.
      * @return The new estimated position using the latest vision 
      */
-    public Pair<Pose2d, Double> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+    public Pair<Pose3d, Double> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
         robotPoseEstimator.setReferencePose(prevEstimatedRobotPose);
 
         double currentTime = Timer.getFPGATimestamp();
         Optional<Pair<Pose3d, Double>> result = robotPoseEstimator.update();
         if (result.isPresent()) {
-            return new Pair<Pose2d, Double>(
-                    result.get().getFirst().toPose2d(), currentTime - result.get().getSecond());
+            return new Pair<Pose3d, Double>(
+                    result.get().getFirst(), currentTime - result.get().getSecond());
         } else {
-            return new Pair<Pose2d, Double>(null, 0.0);
+            return new Pair<Pose3d, Double>(null, 0.0);
         }
     }
 }
