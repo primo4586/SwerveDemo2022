@@ -12,9 +12,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -28,12 +30,15 @@ public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveModule[] mSwerveMods;
     public PigeonIMU gyro;
-    private PoseEstimate poseEstimate;
+    public PoseEstimate poseEstimateClass;//todo: put a better name
     
 
     private Field2d field2d = new Field2d();
 
+    private final SwerveDrivePoseEstimator poseEstimation;
+
     public Swerve() {
+        poseEstimateClass = new PoseEstimate();
         gyro = new PigeonIMU(new TalonSRX(Constants.SwerveConstants.pigeonID));
         gyro.configFactoryDefault();
         zeroGyro();
@@ -45,10 +50,10 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
             new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
         };
-            new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), getPose());
-
+           
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
-        //poseEstimate = new PoseEstimate();
+        poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), getPose());
+
     }
 
      /**
@@ -156,16 +161,36 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
-        field2d.setRobotPose(swerveOdometry.getPoseMeters());
-        var estimateResult = poseEstimate.getEstimatedGlobalPose(getPose());
-        var camToTarget = estimateResult.getFirst();
-        var robotPose = camToTarget.transformBy(LimelightConstants.robotToCam.inverse());
-        System.out.println(robotPose.toPose2d());
+        updateOdometry();
+        /*
+         Pair<Pose2d, Double> result =
+        poseEstimate.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());    
+    var camPose = result.getFirst();
+    var camPoseObsTime = result.getSecond();
+    if (camPose != null) {
+        StartPosition.addVisionMeasurement(camPose, camPoseObsTime);
+        */
         // for(SwerveModule mod : mSwerveMods){
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
         //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
         // }
+    }
+
+    public void updateOdometry() {
+        poseEstimation.update(getYaw(), getPositions());
+
+        // Also apply vision measurements. We use 0.3 seconds in the past as an example
+        // -- on
+        // a real robot, this must be calculated based either on latency or timestamps.
+        Pair<Pose3d, Double> result =
+                poseEstimateClass.getEstimatedGlobalPose(poseEstimation.getEstimatedPosition());
+        var camPose = result.getFirst();
+        var camPoseObsTime = result.getSecond();
+        if (camPose != null) {
+            System.out.println(camPose);
+            poseEstimation.addVisionMeasurement(getPose(), 0);
+        }
     }
 
     public void resetToAbsoluteModules() {
