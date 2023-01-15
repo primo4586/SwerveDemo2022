@@ -2,7 +2,10 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -10,6 +13,18 @@ import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
     public static final double stickDeadband = 0.1;
+
+    public static final class LimelightConstants {
+        public static final String cameraName = "LimeLight";
+
+        public static final Transform3d robotToCam =
+                new Transform3d(
+                        new Translation3d(11.0, 0.0, 32.1),//
+                        new Rotation3d(
+                                0, 0,
+                                0));
+    }
+
 
     public static final class SwerveConstants {
         public static final int pigeonID = 3;
@@ -64,6 +79,10 @@ public final class Constants {
         /* Swerve Profiling Values */
         public static final double maxSpeed = 3; //meters per second
         public static final double maxAngularVelocity = 3;
+
+        /* Swerve Slow Mode Reduce Values */
+        public static final double slowModeSpeed = maxSpeed / 4;
+        public static final double slowModeAngularVelocity = maxAngularVelocity / 2;
 
         /* Neutral Modes */
         public static final NeutralMode angleNeutralMode = NeutralMode.Coast;
