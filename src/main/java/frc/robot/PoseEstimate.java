@@ -1,5 +1,6 @@
 package frc.robot;
 import java.io.IOException;
+import java.rmi.server.SocketSecurityException;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -9,10 +10,12 @@ import org.photonvision.RobotPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.networktables.TimeSyncEventData;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.LimelightConstants;
 public class PoseEstimate {
@@ -24,13 +27,13 @@ public class PoseEstimate {
         
         AprilTagFieldLayout apriltagLayout;
         try {
-            apriltagLayout =new AprilTagFieldLayout("2023-chargedup.json");
+            apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
             limeLight = new PhotonCamera(LimelightConstants.cameraName);
 
             var camList = new ArrayList<Pair<PhotonCamera, Transform3d>>();
             camList.add(new Pair<PhotonCamera, Transform3d>(limeLight, LimelightConstants.robotToCam));
     
-            robotPoseEstimator = new RobotPoseEstimator(apriltagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camList);
+            robotPoseEstimator = new RobotPoseEstimator(apriltagLayout, PoseStrategy.LOWEST_AMBIGUITY, camList);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -48,8 +51,11 @@ public class PoseEstimate {
         double currentTime = Timer.getFPGATimestamp();
         Optional<Pair<Pose3d, Double>> result = robotPoseEstimator.update();
         if (result.isPresent()) {
+            // System.out.println("Latency: " + result.get().getSecond());
+            double timestamp = (currentTime - (result.get().getSecond() / 1000));
+            // System.out.println(timestamp);
             return new Pair<Pose3d, Double>(
-                    result.get().getFirst(), currentTime - result.get().getSecond());
+                    result.get().getFirst(), timestamp);
         } else {
             return new Pair<Pose3d, Double>(null, 0.0);
         }

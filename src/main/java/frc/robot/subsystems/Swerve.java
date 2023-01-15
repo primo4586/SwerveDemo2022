@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.sql.Time;
+
 import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
@@ -13,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,6 +25,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,6 +38,7 @@ public class Swerve extends SubsystemBase {
     
 
     private Field2d field2d = new Field2d();
+    private double lastUpdate = 0;
 
     private final SwerveDrivePoseEstimator poseEstimation;
 
@@ -50,10 +55,10 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
             new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
         };
-           
-        swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
-        poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), getPose());
 
+        swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
+        poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), swerveOdometry.getPoseMeters());
+        poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.1,0.1,0.1));
     }
 
      /**
@@ -120,7 +125,7 @@ public class Swerve extends SubsystemBase {
         }
     }   
     public Pose2d getPose() {
-        return swerveOdometry.getPoseMeters();
+        return poseEstimation.getEstimatedPosition();
     }
 
     public void setFieldTrajectory(String name, Trajectory trajectory) {
@@ -179,6 +184,7 @@ public class Swerve extends SubsystemBase {
 
     public void updateOdometry() {
         poseEstimation.update(getYaw(), getPositions());
+        field2d.getObject("Odometry").setPose(swerveOdometry.getPoseMeters());
 
         // Also apply vision measurements. We use 0.3 seconds in the past as an example
         // -- on
@@ -188,9 +194,15 @@ public class Swerve extends SubsystemBase {
         var camPose = result.getFirst();
         var camPoseObsTime = result.getSecond();
         if (camPose != null) {
-            System.out.println(camPose);
-            poseEstimation.addVisionMeasurement(getPose(), 0);
+                // var visionPosition = camPose.transformBy(LimelightConstants.robotToCam.inverse());
+                // System.out.println(camPoseObsTime);
+                poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
+                field2d.getObject("Vision position").setPose(camPose.toPose2d());
+                // lastUpdate = camPoseObsTime;
+                // System.out.println(camPoseObsTime);
+                // System.out.println(camPose);
         }
+        field2d.setRobotPose(getPose());
     }
 
     public void resetToAbsoluteModules() {

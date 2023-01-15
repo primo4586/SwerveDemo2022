@@ -15,7 +15,7 @@ public final class Constants {
     public static final double stickDeadband = 0.1;
 
     public static final class LimelightConstants {
-        public static final String cameraName = "LimeLight";
+        public static final String cameraName = "limelightCam";
 
         public static final Transform3d robotToCam =
                 new Transform3d(
