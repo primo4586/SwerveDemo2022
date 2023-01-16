@@ -60,7 +60,7 @@ public class RobotContainer {
     
     //zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
     driverController.y().onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
-
+    driverController.b().onTrue(s_Swerve.trajectoryToTag(1));
   }
 
   /** 

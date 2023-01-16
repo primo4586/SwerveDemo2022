@@ -1,13 +1,22 @@
 package frc.robot.subsystems;
 
 import java.sql.Time;
+import java.util.List;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import frc.robot.SwerveModule;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.LimelightConstants;
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants;
 import frc.robot.PoseEstimate;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -16,6 +25,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -31,6 +41,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -42,7 +53,10 @@ public class Swerve extends SubsystemBase {
     
 
     private Field2d field2d = new Field2d();
+    private double teleopRotationOffset = 0;
+
     private double lastUpdate = 0;
+    private Pose2d camPoseTemp = new Pose2d();
 
     private final SwerveDrivePoseEstimator poseEstimation;
 
@@ -81,7 +95,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation, 
-                                    getYaw()
+                                    isOpenLoop ? getTeleopYaw() : getYaw()
                                 )
                                 : new ChassisSpeeds(
                                     translation.getX(), 
@@ -130,7 +144,8 @@ public class Swerve extends SubsystemBase {
         }
     }   
     public Pose2d getPose() {
-        return poseEstimation.getEstimatedPosition();
+        return camPoseTemp;
+        // return poseEstimation.getEstimatedPosition();
     }
 
     public void setFieldTrajectory(String name, Trajectory trajectory) {
@@ -158,10 +173,18 @@ public class Swerve extends SubsystemBase {
         gyro.setYaw(0);
     }
 
+    public void zeroTeleopGyro(){
+        teleopRotationOffset = getYaw().getDegrees();
+    }
+
     public Rotation2d getYaw() {
         double[] ypr = new double[3];
         gyro.getYawPitchRoll(ypr);
         return (Constants.SwerveConstants.invertGyro) ? Rotation2d.fromDegrees(360 - ypr[0]) : Rotation2d.fromDegrees(ypr[0]);
+    }
+
+    public Rotation2d getTeleopYaw() {
+        return getYaw().minus(Rotation2d.fromDegrees(teleopRotationOffset));
     }
 
     @Override
@@ -169,6 +192,7 @@ public class Swerve extends SubsystemBase {
         swerveOdometry.update(getYaw(), getPositions());  
 
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
+        SmartDashboard.putNumber("Teleop Gyro", getTeleopYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
         updateOdometry();
@@ -203,6 +227,8 @@ public class Swerve extends SubsystemBase {
                 // System.out.println(camPoseObsTime);
                 poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
                 field2d.getObject("Vision position").setPose(camPose.toPose2d());
+                camPoseTemp = camPose.toPose2d();
+                
                 // lastUpdate = camPoseObsTime;
                 // System.out.println(camPoseObsTime);
                 // System.out.println(camPose);
@@ -225,4 +251,37 @@ public class Swerve extends SubsystemBase {
         };
     }
 
-}
+    public Command trajectoryToTag(int tagID) {
+        Supplier<Command> followCmdSupplier = () -> 
+
+        new PPSwerveControllerCommand(generateTrajectory(tagID),
+         this::getPose, 
+         SwerveConstants.swerveKinematics,
+         new PIDController(AutoConstants.kPXController, 0, 0),
+         new PIDController(AutoConstants.kPYController, 0, 0),
+          new PIDController(AutoConstants.kPThetaController,0,0), 
+         this::setModuleStates,
+         false,
+         this);
+        
+        return new ProxyCommand(followCmdSupplier);
+    }
+
+    public PathPlannerTrajectory generateTrajectory(int tagID) {
+
+
+        PathPoint robotPose = new PathPoint(getPose().getTranslation(), getYaw());
+
+        Pose2d targetPosition = poseEstimateClass.getApriltagLayout().getTagPose(tagID).get().toPose2d();
+
+        var goalOffsetFromTarget = new Translation2d(1, 0);
+
+        var goalTranslation = targetPosition.getTranslation().minus(goalOffsetFromTarget);
+
+        PathPoint endPoint = new PathPoint(goalTranslation, Rotation2d.fromDegrees(0));
+
+        return PathPlanner.generatePath(
+            new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared),
+            List.of(robotPose, endPoint));
+    }
+}   

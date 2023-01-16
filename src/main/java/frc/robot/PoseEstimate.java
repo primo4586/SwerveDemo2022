@@ -22,10 +22,10 @@ public class PoseEstimate {
 
     public PhotonCamera limeLight;
     public RobotPoseEstimator robotPoseEstimator;
+    private AprilTagFieldLayout apriltagLayout;
 
     public PoseEstimate(){
         
-        AprilTagFieldLayout apriltagLayout;
         try {
             apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
             limeLight = new PhotonCamera(LimelightConstants.cameraName);
@@ -60,4 +60,9 @@ public class PoseEstimate {
             return new Pair<Pose3d, Double>(null, 0.0);
         }
     }
+
+    public AprilTagFieldLayout getApriltagLayout() {
+        return apriltagLayout;
+    }
+    
 }
