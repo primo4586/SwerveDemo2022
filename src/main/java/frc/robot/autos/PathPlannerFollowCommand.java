@@ -10,6 +10,7 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -26,7 +27,7 @@ public class PathPlannerFollowCommand extends SequentialCommandGroup {
   public PathPlannerFollowCommand(Swerve swerve) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    PathPlannerTrajectory trajectory = PathPlanner.loadPath("One Meter Sideways", AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
+    PathPlannerTrajectory trajectory = PathPlanner.loadPath("funny v2 ultra", AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
 
     
     var thetaController =
@@ -38,20 +39,23 @@ public class PathPlannerFollowCommand extends SequentialCommandGroup {
       System.out.println(trajectory.getInitialState().holonomicRotation);
     swerve.setFieldTrajectory("traj", trajectory);
       
-    addCommands(
-      new InstantCommand(() -> swerve.resetOdometryWithNewRotation(trajectory.getInitialPose(), trajectory.getInitialState().holonomicRotation), swerve),
-      new LoggableFollowCommand(
-        trajectory,
-      () -> swerve.getPose(),
+    PPSwerveControllerCommand swerveControllerCommand = new PPSwerveControllerCommand(
+      trajectory, 
+      swerve::getPose,
       SwerveConstants.swerveKinematics,
-      new PIDController(AutoConstants.kPXController, 0, 0),
-      new PIDController(AutoConstants.kPYController, 0, 0),
-      thetaController,
-      swerve::setModuleStates,
-      swerve
-      ));
+       new PIDController(AutoConstants.kPXController, 0, 0),
+       new PIDController(AutoConstants.kPYController, 0, 0),
+        new PIDController(AutoConstants.kPThetaController,0,0), 
+       swerve::setModuleStates,
+       false,
+       swerve);
 
-
+      swerve.setFieldTrajectory("Trajectory", trajectory);
+      
+    addCommands(Commands.runOnce(() -> {
+        swerve.resetOdometry(trajectory.getInitialHolonomicPose());
+    }, swerve),
+   swerveControllerCommand);
 
   }
 }
