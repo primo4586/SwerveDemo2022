@@ -1,25 +1,31 @@
 package frc.robot.subsystems;
 
+import java.sql.Time;
+
 import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import frc.robot.SwerveModule;
+import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants;
-
+import frc.robot.PoseEstimate;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,10 +38,16 @@ public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveModule[] mSwerveMods;
     public PigeonIMU gyro;
+    public PoseEstimate poseEstimateClass;//todo: put a better name
+    
 
     private Field2d field2d = new Field2d();
+    private double lastUpdate = 0;
+
+    private final SwerveDrivePoseEstimator poseEstimation;
 
     public Swerve() {
+        poseEstimateClass = new PoseEstimate();
         gyro = new PigeonIMU(new TalonSRX(Constants.SwerveConstants.pigeonID));
         gyro.configFactoryDefault();
         zeroGyro();
@@ -49,6 +61,8 @@ public class Swerve extends SubsystemBase {
         };
 
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
+        poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), swerveOdometry.getPoseMeters());
+        poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.3,0.3,0.3));
     }
 
      /**
@@ -116,7 +130,7 @@ public class Swerve extends SubsystemBase {
         }
     }   
     public Pose2d getPose() {
-        return swerveOdometry.getPoseMeters();
+        return poseEstimation.getEstimatedPosition();
     }
 
     public void setFieldTrajectory(String name, Trajectory trajectory) {
@@ -157,12 +171,43 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
-        field2d.setRobotPose(swerveOdometry.getPoseMeters());
-        for(SwerveModule mod : mSwerveMods){
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+        updateOdometry();
+        /*
+         Pair<Pose2d, Double> result =
+        poseEstimate.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());    
+    var camPose = result.getFirst();
+    var camPoseObsTime = result.getSecond();
+    if (camPose != null) {
+        StartPosition.addVisionMeasurement(camPose, camPoseObsTime);
+        */
+        // for(SwerveModule mod : mSwerveMods){
+        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
+        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
+        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+        // }
+    }
+
+    public void updateOdometry() {
+        poseEstimation.update(getYaw(), getPositions());
+        field2d.getObject("Odometry").setPose(swerveOdometry.getPoseMeters());
+
+        // Also apply vision measurements. We use 0.3 seconds in the past as an example
+        // -- on
+        // a real robot, this must be calculated based either on latency or timestamps.
+        Pair<Pose3d, Double> result =
+                poseEstimateClass.getEstimatedGlobalPose(poseEstimation.getEstimatedPosition());
+        var camPose = result.getFirst();
+        var camPoseObsTime = result.getSecond();
+        if (camPose != null) {
+                // var visionPosition = camPose.transformBy(LimelightConstants.robotToCam.inverse());
+                // System.out.println(camPoseObsTime);
+                poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
+                field2d.getObject("Vision position").setPose(camPose.toPose2d());
+                // lastUpdate = camPoseObsTime;
+                // System.out.println(camPoseObsTime);
+                // System.out.println(camPose);
         }
+        field2d.setRobotPose(getPose());
     }
 
     public void resetToAbsoluteModules() {
@@ -180,25 +225,4 @@ public class Swerve extends SubsystemBase {
         };
     }
 
-    public Command testSpecificModule() {
-        NetworkTableInstance inst = NetworkTableInstance.getDefault();
-        System.out.println("test");
-        NetworkTable table = inst.getTable("Module Testing");
-    
-        IntegerSubscriber moduleNum = table.getIntegerTopic("Module Number").subscribe(0);
-
-        DoubleSubscriber speed = table.getDoubleTopic("Speed").subscribe(0);
-        DoubleSubscriber angle = table.getDoubleTopic("Angle").subscribe(0);
-        
-        return Commands.runEnd(
-        () -> {
-            Long num = moduleNum.get();
-            mSwerveMods[num.intValue()].setDesiredState(new SwerveModuleState(speed.get(), Rotation2d.fromDegrees(angle.get())), true);
-        }, 
-        () -> {
-            stopModules();
-        },
-        this);
-        
-    }
 }
