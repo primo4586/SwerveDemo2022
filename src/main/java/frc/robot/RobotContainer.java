@@ -4,14 +4,19 @@
 
 package frc.robot;
 
+import java.util.function.BooleanSupplier;
+
+import com.fasterxml.jackson.databind.ser.std.BooleanSerializer;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.autos.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
@@ -24,26 +29,32 @@ import frc.robot.subsystems.*;
  */
 public class RobotContainer {
   /* Controllers */
-  private final Joystick driver = new Joystick(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
 
   /* Drive Controls */
   private final int translationAxis = XboxController.Axis.kLeftY.value;
   private final int strafeAxis = XboxController.Axis.kLeftX.value;
   private final int rotationAxis = XboxController.Axis.kRightX.value;
+  
+
+
 
   /* Driver Buttons */
+  /* 
   private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton tuneDriveMotor = new JoystickButton(driver, XboxController.Button.kX.value);
+  private final JoystickButton testModule = new JoystickButton(driver, XboxController.Button.kA.value);
+  */
+
 
   /* Subsystems */
   private final Swerve s_Swerve = new Swerve();
-
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     boolean fieldRelative = true;
     boolean openLoop = true;
-    s_Swerve.setDefaultCommand(new TeleopSwerve(s_Swerve, driver, translationAxis, strafeAxis, rotationAxis, fieldRelative, openLoop));
+    s_Swerve.setDefaultCommand(new TeleopSwerve(s_Swerve, driverController, translationAxis, strafeAxis, rotationAxis, fieldRelative, openLoop, () ->driverController.getRightTriggerAxis() > 0.5));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -59,7 +70,11 @@ public class RobotContainer {
     /* Driver Buttons */
 
     // tuneDriveMotor.whenPressed(new TuneDriveMotor(s_Swerve));
-    zeroGyro.whenPressed(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
+    // testModule.whileTrue(s_Swerve.testSpecificModule());
+    
+    //zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
+    driverController.y().onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
+
   }
 
   /** 

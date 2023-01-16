@@ -10,13 +10,22 @@ import frc.robot.Constants;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
@@ -31,9 +40,6 @@ public class Swerve extends SubsystemBase {
         gyro.configFactoryDefault();
         zeroGyro();
         
-        swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw());
-
-
         SmartDashboard.putData(field2d);
         mSwerveMods = new SwerveModule[] {
             new SwerveModule(0, Constants.SwerveConstants.Mod0.constants),
@@ -41,6 +47,8 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
             new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
         };
+
+        swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
     }
 
      /**
@@ -69,6 +77,7 @@ public class Swerve extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.SwerveConstants.maxSpeed);
 
         //mSwerveMods[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
+        
          for(SwerveModule mod : mSwerveMods){
              mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
          }
@@ -115,16 +124,12 @@ public class Swerve extends SubsystemBase {
     }
 
     public void resetOdometry(Pose2d pose) {
-        swerveOdometry.resetPosition(pose, pose.getRotation()); 
-        gyro.setYaw(pose.getRotation().getDegrees());
+        swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
     }
     
-
     public void resetOdometryWithNewRotation(Pose2d pose, Rotation2d initalRotation) {
-        swerveOdometry.resetPosition(pose, initalRotation);
-        ErrorCode errorCode = gyro.setYaw(initalRotation.getDegrees());
-        System.out.println(errorCode);
-        
+        Pose2d newPose2d = new Pose2d(pose.getTranslation(), initalRotation);
+        swerveOdometry.resetPosition(getYaw(), getPositions(), newPose2d);
     }
 
     public SwerveModuleState[] getStates(){
@@ -147,7 +152,7 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic(){
-        swerveOdometry.update(getYaw(), getStates());  
+        swerveOdometry.update(getYaw(), getPositions());  
 
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
@@ -164,5 +169,36 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(mod.getOffset())), true);
         }
+    }
+
+    public SwerveModulePosition[] getPositions() {
+        return new SwerveModulePosition[] {
+            mSwerveMods[0].getPostion(),
+            mSwerveMods[1].getPostion(),
+            mSwerveMods[2].getPostion(),
+            mSwerveMods[3].getPostion(),            
+        };
+    }
+
+    public Command testSpecificModule() {
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+        System.out.println("test");
+        NetworkTable table = inst.getTable("Module Testing");
+    
+        IntegerSubscriber moduleNum = table.getIntegerTopic("Module Number").subscribe(0);
+
+        DoubleSubscriber speed = table.getDoubleTopic("Speed").subscribe(0);
+        DoubleSubscriber angle = table.getDoubleTopic("Angle").subscribe(0);
+        
+        return Commands.runEnd(
+        () -> {
+            Long num = moduleNum.get();
+            mSwerveMods[num.intValue()].setDesiredState(new SwerveModuleState(speed.get(), Rotation2d.fromDegrees(angle.get())), true);
+        }, 
+        () -> {
+            stopModules();
+        },
+        this);
+        
     }
 }
