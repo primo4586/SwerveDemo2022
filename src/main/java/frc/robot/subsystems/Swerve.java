@@ -58,7 +58,7 @@ public class Swerve extends SubsystemBase {
 
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
         poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), swerveOdometry.getPoseMeters());
-        poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.1,0.1,0.1));
+        poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.3,0.3,0.3));
     }
 
      /**
