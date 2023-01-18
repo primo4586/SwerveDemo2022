@@ -19,43 +19,31 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.*;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:`
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
+// 
 public class PathPlannerFollowCommand extends SequentialCommandGroup {
-  /** Creates a new PathPlannerFollowCommand. */
+
   public PathPlannerFollowCommand(Swerve swerve) {
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
-    PathPlannerTrajectory trajectory = PathPlanner.loadPath("funny v2 ultra", AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
-
+    PathPlannerTrajectory trajectory = PathPlanner.loadPath("funny v2 ultra", AutoConstants.kMaxSpeedMetersPerSecond,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared);
+    PPSwerveControllerCommand swerveControllerCommand = null;
     
-    var thetaController =
-            new ProfiledPIDController(
-                Constants.AutoConstants.kPThetaController, 0, 0, Constants.AutoConstants.kThetaControllerConstraints);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    swerveControllerCommand = new PPSwerveControllerCommand(
+        trajectory,
+        swerve::getPose,
+        SwerveConstants.swerveKinematics,
+        new PIDController(AutoConstants.kPXController, 0, 0),
+        new PIDController(AutoConstants.kPYController, 0, 0),
+        new PIDController(AutoConstants.kPThetaController, 0, 0),
+        swerve::setModuleStates,
+        false,
+        swerve);
 
+    swerve.setFieldTrajectory("Trajectory", trajectory);
 
-      System.out.println(trajectory.getInitialState().holonomicRotation);
-    swerve.setFieldTrajectory("traj", trajectory);
-      
-    PPSwerveControllerCommand swerveControllerCommand = new PPSwerveControllerCommand(
-      trajectory, 
-      swerve::getPose,
-      SwerveConstants.swerveKinematics,
-       new PIDController(AutoConstants.kPXController, 0, 0),
-       new PIDController(AutoConstants.kPYController, 0, 0),
-        new PIDController(AutoConstants.kPThetaController,0,0), 
-       swerve::setModuleStates,
-       false,
-       swerve);
-
-      swerve.setFieldTrajectory("Trajectory", trajectory);
-      
+    // change the lambda to an external command or state it outside the runOnce function
     addCommands(Commands.runOnce(() -> {
-        swerve.resetOdometry(trajectory.getInitialHolonomicPose());
+      swerve.resetOdometry(trajectory.getInitialHolonomicPose());
     }, swerve),
-   swerveControllerCommand);
-
+        swerveControllerCommand);
   }
 }

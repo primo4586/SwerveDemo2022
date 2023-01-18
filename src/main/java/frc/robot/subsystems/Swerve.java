@@ -46,18 +46,15 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
-    public SwerveDriveOdometry swerveOdometry;
-    public SwerveModule[] mSwerveMods;
-    public PigeonIMU gyro;
-    public PoseEstimate poseEstimateClass;//todo: put a better name
-    
+    private SwerveDriveOdometry swerveOdometry;
+    private SwerveModule[] mSwerveMods;
+    private PigeonIMU gyro;
+    private PoseEstimate poseEstimateClass;// TODO: put a better name
 
     private Field2d field2d = new Field2d();
     private double teleopRotationOffset = 0;
 
-    private double lastUpdate = 0;
-    private Pose2d camPoseTemp = new Pose2d();
-
+    // odometry estimator based on camera
     private final SwerveDrivePoseEstimator poseEstimation;
 
     public Swerve() {
@@ -65,87 +62,85 @@ public class Swerve extends SubsystemBase {
         gyro = new PigeonIMU(new TalonSRX(Constants.SwerveConstants.pigeonID));
         gyro.configFactoryDefault();
         zeroGyro();
-        
+
         SmartDashboard.putData(field2d);
         mSwerveMods = new SwerveModule[] {
-            new SwerveModule(0, Constants.SwerveConstants.Mod0.constants),
-            new SwerveModule(1, Constants.SwerveConstants.Mod1.constants),
-            new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
-            new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
+                new SwerveModule(0, Constants.SwerveConstants.Mod0.constants),
+                new SwerveModule(1, Constants.SwerveConstants.Mod1.constants),
+                new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
+                new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
         };
 
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
-        poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions(), swerveOdometry.getPoseMeters());
-        poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.3,0.3,0.3));
+        poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(),
+                getPositions(), swerveOdometry.getPoseMeters());
+        poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.3, 0.3, 0.3));
     }
 
-     /**
+    /**
      * Drives the robot during teleop control.
+     * 
      * @see TeleopSwerve
      * 
-     * @param translation Movement of the robot on the X & Y plane
-     * @param rotation Movement in rotation. 
-     * @param fieldRelative If the robot should move relative to the field or the robot.
-     * @param isOpenLoop If the robot should use PID & FF to correct itself and be more accurate 
+     * @param translation   Movement of the robot on the X & Y plane
+     * @param rotation      Movement in rotation.
+     * @param fieldRelative If the robot should move relative to the field or the
+     *                      robot.
+     * @param isOpenLoop    If the robot should use PID & FF to correct itself and
+     *                      be more accurate
      */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        SwerveModuleState[] swerveModuleStates =
-            Constants.SwerveConstants.swerveKinematics.toSwerveModuleStates(
+        // use less ternary operator and state more explicit local varibles in the
+        // function
+        SwerveModuleState[] swerveModuleStates = Constants.SwerveConstants.swerveKinematics.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation, 
-                                    isOpenLoop ? getTeleopYaw() : getYaw()
-                                )
-                                : new ChassisSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation)
-                                );
+                        translation.getX(),
+                        translation.getY(),
+                        rotation,
+                        isOpenLoop ? getTeleopYaw() : getYaw())
+                        : new ChassisSpeeds(
+                                translation.getX(),
+                                translation.getY(),
+                                rotation));
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.SwerveConstants.maxSpeed);
 
-        //mSwerveMods[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
-        
-         for(SwerveModule mod : mSwerveMods){
-             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
-         }
-    }    
+        // mSwerveMods[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
+
+        for (SwerveModule mod : mSwerveMods) {
+            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
+        }
+    }
 
     public void stopModules() {
-        for(SwerveModule module : mSwerveMods) {
+        for (SwerveModule module : mSwerveMods) {
             module.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), true);
         }
     }
 
-    public void setRobotPose2D(Pose2d pose2d)
-    {
+    public void setRobotPose2D(Pose2d pose2d) {
         field2d.setRobotPose(pose2d);
-    }
-
-    public SwerveModule getModule(int moduleNum) {
-          return mSwerveMods[moduleNum];
     }
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.SwerveConstants.maxSpeed);
-        
-        for(SwerveModule mod : mSwerveMods){
+
+        for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
         }
-    }    
-
+    }
 
     public void setModuleStatesOpenLoop(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.SwerveConstants.maxSpeed);
-        
-        for(SwerveModule mod : mSwerveMods){
+
+        for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(desiredStates[mod.moduleNumber], true);
         }
-    }   
+    }
+
     public Pose2d getPose() {
-        return camPoseTemp;
-        // return poseEstimation.getEstimatedPosition();
+        // return camPoseTemp;
+        return poseEstimation.getEstimatedPosition();
     }
 
     public void setFieldTrajectory(String name, Trajectory trajectory) {
@@ -155,32 +150,33 @@ public class Swerve extends SubsystemBase {
     public void resetOdometry(Pose2d pose) {
         swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
     }
-    
+
     public void resetOdometryWithNewRotation(Pose2d pose, Rotation2d initalRotation) {
         Pose2d newPose2d = new Pose2d(pose.getTranslation(), initalRotation);
         swerveOdometry.resetPosition(getYaw(), getPositions(), newPose2d);
     }
 
-    public SwerveModuleState[] getStates(){
+    public SwerveModuleState[] getStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
-        for(SwerveModule mod : mSwerveMods){
+        for (SwerveModule mod : mSwerveMods) {
             states[mod.moduleNumber] = mod.getState();
         }
         return states;
     }
 
-    public void zeroGyro(){
+    public void zeroGyro() {
         gyro.setYaw(0);
     }
 
-    public void zeroTeleopGyro(){
+    public void zeroTeleopGyro() {
         teleopRotationOffset = getYaw().getDegrees();
     }
 
     public Rotation2d getYaw() {
         double[] ypr = new double[3];
         gyro.getYawPitchRoll(ypr);
-        return (Constants.SwerveConstants.invertGyro) ? Rotation2d.fromDegrees(360 - ypr[0]) : Rotation2d.fromDegrees(ypr[0]);
+        return (Constants.SwerveConstants.invertGyro) ? Rotation2d.fromDegrees(360 - ypr[0])
+                : Rotation2d.fromDegrees(ypr[0]);
     }
 
     public Rotation2d getTeleopYaw() {
@@ -188,27 +184,22 @@ public class Swerve extends SubsystemBase {
     }
 
     @Override
-    public void periodic(){
-        swerveOdometry.update(getYaw(), getPositions());  
+    public void periodic() {
+        swerveOdometry.update(getYaw(), getPositions());
 
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("Teleop Gyro", getTeleopYaw().getDegrees());
         SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
         updateOdometry();
-        /*
-         Pair<Pose2d, Double> result =
-        poseEstimate.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());    
-    var camPose = result.getFirst();
-    var camPoseObsTime = result.getSecond();
-    if (camPose != null) {
-        StartPosition.addVisionMeasurement(camPose, camPoseObsTime);
-        */
-        // for(SwerveModule mod : mSwerveMods){
-        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
-        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-        //     SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
-        // }
+
+        for (SwerveModule mod : mSwerveMods) {
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder",
+            // mod.getCanCoder().getDegrees());
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated",
+            // mod.getState().angle.getDegrees());
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
+        }
     }
 
     public void updateOdometry() {
@@ -218,70 +209,64 @@ public class Swerve extends SubsystemBase {
         // Also apply vision measurements. We use 0.3 seconds in the past as an example
         // -- on
         // a real robot, this must be calculated based either on latency or timestamps.
-        Pair<Pose3d, Double> result =
-                poseEstimateClass.getEstimatedGlobalPose(poseEstimation.getEstimatedPosition());
+        Pair<Pose3d, Double> result = poseEstimateClass.getEstimatedGlobalPose(poseEstimation.getEstimatedPosition());
         var camPose = result.getFirst();
         var camPoseObsTime = result.getSecond();
         if (camPose != null) {
-                // var visionPosition = camPose.transformBy(LimelightConstants.robotToCam.inverse());
-                // System.out.println(camPoseObsTime);
-                poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
-                field2d.getObject("Vision position").setPose(camPose.toPose2d());
-                camPoseTemp = camPose.toPose2d();
-                
-                // lastUpdate = camPoseObsTime;
-                // System.out.println(camPoseObsTime);
-                // System.out.println(camPose);
+            // var visionPosition =
+            // camPose.transformBy(LimelightConstants.robotToCam.inverse());
+            // System.out.println(camPoseObsTime);
+            poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
+            field2d.getObject("Vision position").setPose(camPose.toPose2d());
+
+            // lastUpdate = camPoseObsTime;
+            // System.out.println(camPoseObsTime);
+            // System.out.println(camPose);
         }
         field2d.setRobotPose(getPose());
     }
 
     public void resetToAbsoluteModules() {
-        for(SwerveModule mod : mSwerveMods) {
+        for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(mod.getOffset())), true);
         }
     }
 
     public SwerveModulePosition[] getPositions() {
         return new SwerveModulePosition[] {
-            mSwerveMods[0].getPostion(),
-            mSwerveMods[1].getPostion(),
-            mSwerveMods[2].getPostion(),
-            mSwerveMods[3].getPostion(),            
+                mSwerveMods[0].getPostion(),
+                mSwerveMods[1].getPostion(),
+                mSwerveMods[2].getPostion(),
+                mSwerveMods[3].getPostion(),
         };
     }
 
     public Command trajectoryToTag(int tagID) {
-        Supplier<Command> followCmdSupplier = () -> 
+        Supplier<Command> followCmdSupplier = () -> new PPSwerveControllerCommand(generateTrajectory(tagID),
+                this::getPose,
+                SwerveConstants.swerveKinematics,
+                new PIDController(AutoConstants.kPXController, 0, 0),
+                new PIDController(AutoConstants.kPYController, 0, 0),
+                new PIDController(AutoConstants.kPThetaController, 0, 0),
+                this::setModuleStates,
+                false,
+                this);
 
-        new PPSwerveControllerCommand(generateTrajectory(tagID),
-         this::getPose, 
-         SwerveConstants.swerveKinematics,
-         new PIDController(AutoConstants.kPXController, 0, 0),
-         new PIDController(AutoConstants.kPYController, 0, 0),
-          new PIDController(AutoConstants.kPThetaController,0,0), 
-         this::setModuleStates,
-         false,
-         this);
-        
         return new ProxyCommand(followCmdSupplier);
     }
 
     public PathPlannerTrajectory generateTrajectory(int tagID) {
-
-
         PathPoint robotPose = new PathPoint(getPose().getTranslation(), getYaw());
-
         Pose2d targetPosition = poseEstimateClass.getApriltagLayout().getTagPose(tagID).get().toPose2d();
-
-        var goalOffsetFromTarget = new Translation2d(1, 0);
-
+        var goalOffsetFromTarget = new Translation2d(1, 0.3);
+        
+        // better name, not easy to understand
         var goalTranslation = targetPosition.getTranslation().minus(goalOffsetFromTarget);
-
         PathPoint endPoint = new PathPoint(goalTranslation, Rotation2d.fromDegrees(0));
 
         return PathPlanner.generatePath(
-            new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared),
-            List.of(robotPose, endPoint));
+                new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond,
+                        AutoConstants.kMaxAccelerationMetersPerSecondSquared),
+                List.of(robotPose, endPoint));
     }
-}   
+}

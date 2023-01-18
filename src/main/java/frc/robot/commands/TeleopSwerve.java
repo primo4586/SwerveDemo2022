@@ -22,8 +22,10 @@ public class TeleopSwerve extends CommandBase {
     private boolean fieldRelative;
     private boolean openLoop;
     
-    private Swerve s_Swerve;
+    private Swerve swerve;
     private CommandXboxController controller;
+
+    // choose better names for translation axis and strafe axis
     private int translationAxis;
     private int strafeAxis;
     private int rotationAxis;
@@ -33,9 +35,9 @@ public class TeleopSwerve extends CommandBase {
     /**
      * Driver control
      */
-    public TeleopSwerve(Swerve s_Swerve, CommandXboxController controller, int translationAxis, int strafeAxis, int rotationAxis, boolean fieldRelative, boolean openLoop, BooleanSupplier slowMode) {
-        this.s_Swerve = s_Swerve;
-        addRequirements(s_Swerve);
+    public TeleopSwerve(Swerve swerve, CommandXboxController controller, int translationAxis, int strafeAxis, int rotationAxis, boolean fieldRelative, boolean openLoop, BooleanSupplier slowMode) {
+        this.swerve = swerve;
+        addRequirements(swerve);
 
         this.controller = controller;
         this.translationAxis = translationAxis;
@@ -48,7 +50,8 @@ public class TeleopSwerve extends CommandBase {
 
     @Override
     public void initialize() {
-        //s_Swerve.stopModules();
+        // If you are going to keep this line you better write it as an actual impotant log that states that the Teleop Swerve command
+        // has started (and you can add memes afterwards)
         System.out.println("vroom vroom");
     }
 
@@ -59,6 +62,7 @@ public class TeleopSwerve extends CommandBase {
         double rAxis = -controller.getRawAxis(rotationAxis);
         
         /* Deadbands */
+
         yAxis = (Math.abs(yAxis) < Constants.stickDeadband) ? 0 : yAxis;
         xAxis = (Math.abs(xAxis) < Constants.stickDeadband) ? 0 : xAxis;
         rAxis = (Math.abs(rAxis) < Constants.stickDeadband) ? 0 : rAxis;
@@ -67,21 +71,13 @@ public class TeleopSwerve extends CommandBase {
         if(!slowMode.getAsBoolean()){
             translation = new Translation2d(yAxis, xAxis).times(Constants.SwerveConstants.maxSpeed);
             rotation = rAxis * Constants.SwerveConstants.maxAngularVelocity;
-            s_Swerve.drive(translation, rotation, fieldRelative, openLoop);
+            swerve.drive(translation, rotation, fieldRelative, openLoop);
         }
-        else{
+        else
+        {
             translation = new Translation2d(yAxis, xAxis).times(Constants.SwerveConstants.slowModeSpeed);
             rotation = rAxis * Constants.SwerveConstants.slowModeAngularVelocity;
-            s_Swerve.drive(translation, rotation, fieldRelative, openLoop);
+            swerve.drive(translation, rotation, fieldRelative, openLoop);
         }
-        
-
     }
-    
-   @Override
-   public void end(boolean interrupted) {
-    // s_Swerve.stopModules();
-}
-
-   
 }

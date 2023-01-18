@@ -8,7 +8,6 @@ public class Camera {
     private boolean isThereTarget;
     private double distance;
     int targetID;
-    double poseAmbiguity;
     PhotonCamera camera = new PhotonCamera("limelight");
 
     public void update(){
@@ -18,12 +17,7 @@ public class Camera {
         if(isThereTarget){
             PhotonTrackedTarget target = result.getBestTarget();
             targetID = target.getFiducialId();
-            poseAmbiguity = target.getPoseAmbiguity();
         }
-    }
-
-    public double getDistance() {
-        return distance;
     }
 
     public boolean getIsThereTarget() {
