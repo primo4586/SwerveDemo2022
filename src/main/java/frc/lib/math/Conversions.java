@@ -63,7 +63,7 @@ public class Conversions {
      */
     public static double falconToMeters(double counts, double circumference, double gearRatio){
         double wheelRotations = counts / (2048 * gearRatio);
-        double wheelMeters = counts * circumference;
+        double wheelMeters = wheelRotations * circumference;
         return wheelMeters;
     }
 

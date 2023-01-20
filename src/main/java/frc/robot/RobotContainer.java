@@ -4,10 +4,6 @@
 
 package frc.robot;
 
-import java.util.function.BooleanSupplier;
-
-import com.fasterxml.jackson.databind.ser.std.BooleanSerializer;
-
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -16,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.robot.autos.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
@@ -35,20 +31,10 @@ public class RobotContainer {
   private final int translationAxis = XboxController.Axis.kLeftY.value;
   private final int strafeAxis = XboxController.Axis.kLeftX.value;
   private final int rotationAxis = XboxController.Axis.kRightX.value;
-  
-
-
-
-  /* Driver Buttons */
-  /* 
-  private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
-  private final JoystickButton tuneDriveMotor = new JoystickButton(driver, XboxController.Button.kX.value);
-  private final JoystickButton testModule = new JoystickButton(driver, XboxController.Button.kA.value);
-  */
-
 
   /* Subsystems */
   private final Swerve s_Swerve = new Swerve();
+
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -74,7 +60,7 @@ public class RobotContainer {
     
     //zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
     driverController.y().onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
-
+    driverController.b().onTrue(s_Swerve.trajectoryToTag(1));
   }
 
   /** 

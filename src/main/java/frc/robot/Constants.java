@@ -15,11 +15,11 @@ public final class Constants {
     public static final double stickDeadband = 0.1;
 
     public static final class LimelightConstants {
-        public static final String cameraName = "LimeLight";
+        public static final String cameraName = "limelightCam";
 
         public static final Transform3d robotToCam =
                 new Transform3d(
-                        new Translation3d(11.0, 0.0, 32.1),//
+                        new Translation3d(0.115, 0.0, 0.367),//לתקן ביחס לרובוט
                         new Rotation3d(
                                 0, 0,
                                 0));
@@ -66,7 +66,7 @@ public final class Constants {
         public static final double angleKF = 0.0;
 
         /* Drive Motor PID Values */
-        public static final double driveKP = 0.1;
+        public static final double driveKP = 0.15;
         public static final double driveKI = 0.0;
         public static final double driveKD = 0.0;
         public static final double driveKF = 0.0;
@@ -142,13 +142,13 @@ public final class Constants {
     public static final class AutoConstants {
         // Self-explanatory, Limits for speed (linear velocity) and speed of rotation (angular velocity)
         public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 1;
-        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+        public static final double kMaxAngularSpeedRadiansPerSecond = 3 * Math.PI;
+        public static final double kMaxAngularSpeedRadiansPerSecondSquared =  3* Math.PI;
     
         public static final double kPXController = 1;
         public static final double kPYController = 1;
-        public static final double kPThetaController = 1;
+        public static final double kPThetaController = 1.3;//2.5;
     
         // Basically a PID controller that also uses the physical limits of the swerve (max speed & max acceleration) to not go over the maximum values
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
