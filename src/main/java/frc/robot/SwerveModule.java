@@ -70,8 +70,6 @@ public class SwerveModule {
         if (isOpenLoop) {
             // If it's open loop, it means we don't use PID/FF, and we are not aiming for
             // accuracy
-            // double percentOutput = desiredState.speedMetersPerSecond /
-            // SwerveConstants.maxSpeed;
             double percentOutput = (desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed)
                     * Constants.SwerveConstants.maxPercentVelocity;
             mDriveMotor.set(ControlMode.PercentOutput, percentOutput);
@@ -95,12 +93,6 @@ public class SwerveModule {
             SmartDashboard.putNumber("Mod " + moduleNumber + " Current Velocity", getState().speedMetersPerSecond);
             SmartDashboard.putNumber("Mod " + moduleNumber + " Desired Angle ", desiredState.angle.getDegrees());
         }
-        // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor
-        // Tuning").addEntry("Module Drive " + moduleNumber + " Current
-        // Speed").setNumber(getState().speedMetersPerSecond);
-        // PrimoShuffleboard.getInstance().getPrimoTab("Drive Motor
-        // Tuning").addEntry("Module Drive " + moduleNumber + " Setpoint
-        // ").setNumber(desiredState.speedMetersPerSecond);
         lastAngle = angle;
     }
 

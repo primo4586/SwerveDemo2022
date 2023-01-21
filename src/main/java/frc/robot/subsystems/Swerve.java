@@ -117,10 +117,6 @@ public class Swerve extends SubsystemBase {
         }
     }
 
-    public void setRobotPose2D(Pose2d pose2d) {
-        field2d.setRobotPose(pose2d);
-    }
-
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.SwerveConstants.maxSpeed);
@@ -130,16 +126,7 @@ public class Swerve extends SubsystemBase {
         }
     }
 
-    public void setModuleStatesOpenLoop(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.SwerveConstants.maxSpeed);
-
-        for (SwerveModule mod : mSwerveMods) {
-            mod.setDesiredState(desiredStates[mod.moduleNumber], true);
-        }
-    }
-
     public Pose2d getPose() {
-        // return camPoseTemp;
         return poseEstimation.getEstimatedPosition();
     }
 
@@ -149,11 +136,6 @@ public class Swerve extends SubsystemBase {
 
     public void resetOdometry(Pose2d pose) {
         swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
-    }
-
-    public void resetOdometryWithNewRotation(Pose2d pose, Rotation2d initalRotation) {
-        Pose2d newPose2d = new Pose2d(pose.getTranslation(), initalRotation);
-        swerveOdometry.resetPosition(getYaw(), getPositions(), newPose2d);
     }
 
     public SwerveModuleState[] getStates() {
@@ -189,15 +171,11 @@ public class Swerve extends SubsystemBase {
 
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("Teleop Gyro", getTeleopYaw().getDegrees());
-        SmartDashboard.putNumber("X", swerveOdometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("Y", swerveOdometry.getPoseMeters().getY());
         updateOdometry();
 
         for (SwerveModule mod : mSwerveMods) {
-            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder",
-            // mod.getCanCoder().getDegrees());
-            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated",
-            // mod.getState().angle.getDegrees());
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
+            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
         }
     }
@@ -213,15 +191,8 @@ public class Swerve extends SubsystemBase {
         var camPose = result.getFirst();
         var camPoseObsTime = result.getSecond();
         if (camPose != null) {
-            // var visionPosition =
-            // camPose.transformBy(LimelightConstants.robotToCam.inverse());
-            // System.out.println(camPoseObsTime);
             poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
             field2d.getObject("Vision position").setPose(camPose.toPose2d());
-
-            // lastUpdate = camPoseObsTime;
-            // System.out.println(camPoseObsTime);
-            // System.out.println(camPose);
         }
         field2d.setRobotPose(getPose());
     }
