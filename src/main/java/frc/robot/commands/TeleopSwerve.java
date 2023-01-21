@@ -1,6 +1,6 @@
 package frc.robot.commands;
 
-import frc.robot.Constants;
+import frc.robot.Constants.Misc;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.Swerve;
 
@@ -59,9 +59,9 @@ public class TeleopSwerve extends CommandBase {
         
         /* Deadbands */
 
-        yAxis = (Math.abs(yAxis) < Constants.stickDeadband) ? 0 : yAxis;
-        xAxis = (Math.abs(xAxis) < Constants.stickDeadband) ? 0 : xAxis;
-        rAxis = (Math.abs(rAxis) < Constants.stickDeadband) ? 0 : rAxis;
+        yAxis = (Math.abs(yAxis) < Misc.stickDeadband) ? 0 : yAxis;
+        xAxis = (Math.abs(xAxis) < Misc.stickDeadband) ? 0 : xAxis;
+        rAxis = (Math.abs(rAxis) < Misc.stickDeadband) ? 0 : rAxis;
         
         
         if(!slowMode.getAsBoolean()){

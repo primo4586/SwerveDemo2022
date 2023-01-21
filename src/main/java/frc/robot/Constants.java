@@ -12,36 +12,6 @@ import edu.wpi.first.math.util.Units;
 import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
-    // Deadband for joysticks. To deny too small of joystick values.
-    public static final double stickDeadband = 0.1;
-
-    public static final class VisionConstants {
-        // Camera's name in Photon's NetworkTable (Set in the PhotonVision UI)
-        public static final String cameraName = "limelightCam";
-
-        /**
-         * Camera's relative location to the center of the robot.
-         * Translation in meters,
-         * Rotation is in radians.
-         * (Changes Per Robot)
-         */
-        public static final Transform3d robotToCam =
-                new Transform3d(
-                        new Translation3d(0.115, 0.0, 0.367),
-                        new Rotation3d(
-                                0, 0,
-                                0));
-    }
-
-    public static final class Misc {
-        /* Gyro Align Robot PID Values */
-        public static final double gyroAlignKP = 0.3;
-        public static final double gyroAlignKI = 0.0;
-        public static final double gyroAlignKD = 0.0;
-        public static final double gyroAlignKF = 0.0;
-        
-    }
-
 
     public static final class SwerveConstants {
         /* Gyro ID (Changes Per Robot) */
@@ -163,6 +133,36 @@ public final class Constants {
                 new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset, false);
         }
 
+    }
+
+    public static final class Misc {
+        /* Gyro Align Robot PID Values */
+        public static final double gyroAlignKP = 0.3;
+        public static final double gyroAlignKI = 0.0;
+        public static final double gyroAlignKD = 0.0;
+        public static final double gyroAlignKF = 0.0;
+        
+        // Deadband for joysticks. To deny too small of joystick values.
+        public static final double stickDeadband = 0.1;
+    }
+
+  
+    public static final class VisionConstants {
+        // Camera's name in Photon's NetworkTable (Set in the PhotonVision UI)
+        public static final String cameraName = "limelightCam";
+
+        /**
+         * Camera's relative location to the center of the robot.
+         * Translation in meters,
+         * Rotation is in radians.
+         * (Changes Per Robot)
+         */
+        public static final Transform3d robotToCam =
+                new Transform3d(
+                        new Translation3d(0.115, 0.0, 0.367),
+                        new Rotation3d(
+                                0, 0,
+                                0));
     }
 
     public static final class AutoConstants {
