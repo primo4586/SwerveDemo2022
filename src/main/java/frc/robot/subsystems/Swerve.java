@@ -16,6 +16,7 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.LimelightConstants;
+import frc.robot.Constants.Misc;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants;
 import frc.robot.PoseEstimate;
@@ -270,9 +271,14 @@ public class Swerve extends SubsystemBase {
                 List.of(robotPose, endPoint));
     }
 
+    /**
+     * Auto-aligns the robot to a given setpoint degree
+     * @param degrees degree to align the robot to
+     * @return a command that aligns the robot until its' aligned.
+     */
     public Command gyroAlignCommand(double degrees) {
 
-        PIDController pid = new PIDController(SwerveConstants.angleRobotKP, 0, 0);
+        PIDController pid = new PIDController(Misc.gyroAlignKP, 0, 0);
 
         return run(() -> {
             drive(
@@ -280,6 +286,8 @@ public class Swerve extends SubsystemBase {
                     pid.calculate(getYaw().getDegrees(), degrees),
                     false,
                     false);
-        }).until(() -> pid.atSetpoint());
+        })
+        .until(() -> pid.atSetpoint())
+        .finallyDo((interrupted) -> pid.close());
     }
 }
