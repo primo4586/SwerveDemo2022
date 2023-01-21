@@ -33,6 +33,15 @@ public final class Constants {
                                 0));
     }
 
+    public static final class Misc {
+        /* Gyro Align Robot PID Values */
+        public static final double gyroAlignKP = 0.3;
+        public static final double gyroAlignKI = 0.0;
+        public static final double gyroAlignKD = 0.0;
+        public static final double gyroAlignKF = 0.0;
+        
+    }
+
 
     public static final class SwerveConstants {
         /* Gyro ID (Changes Per Robot) */

@@ -64,6 +64,8 @@ public class RobotContainer {
 
     // Example tag ID position to go for, & the translation offset from the tag's position
     driverController.b().onTrue(swerve.followTrajectoryToTag(1, new Translation2d(1, 0))); 
+    // NOTE: This is not fully tested - will need tuning of the PID before using!
+	  driverController.leftTrigger().whileTrue(swerve.gyroAlignCommand(45));
   }
 
   /** 
