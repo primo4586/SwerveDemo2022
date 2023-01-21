@@ -1,10 +1,8 @@
 package frc.robot.subsystems;
 
-import java.sql.Time;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.pathplanner.lib.PathConstraints;
@@ -15,10 +13,9 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import frc.robot.SwerveModule;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants;
-import frc.robot.PoseEstimate;
+import frc.robot.VisionPoseEstimator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -26,116 +23,152 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
-    private SwerveDriveOdometry swerveOdometry;
-    private SwerveModule[] mSwerveMods;
-    private PigeonIMU gyro;
-    private PoseEstimate poseEstimateClass;// TODO: put a better name
 
-    private Field2d field2d = new Field2d();
+    // Swerve Basic Components
+    private SwerveModule[] mSwerveMods; // Order for modules is always FL, FR, BL, BR
+    private PigeonIMU gyro;
+
+    // To avoid gyro resetting messing with odometry data, during teleop the driver
+    // resets the offset to the current gyro angle, rather then resetting the gyro
+    // itself
     private double teleopRotationOffset = 0;
 
-    // odometry estimator based on camera
+    // Field visualizer for debug purposes
+    private Field2d field2d = new Field2d();
+
+    // Uses vision data to estimate the robot's position on the field.
+    private VisionPoseEstimator visionPoseEstimator;
+
+    // Uses the swerve's encoders to estimate it's position on the field, given a
+    // starting position. (Like a Odometer on cars, but instead of counting kms,
+    // this counts the offset from a starting position)
+    private SwerveDriveOdometry swerveOdometry;
+
+    // Uses the odometry & vision pose estimator, to fuse their data together in
+    // order to better estimate the robot's position on the field.
     private final SwerveDrivePoseEstimator poseEstimation;
 
     public Swerve() {
-        poseEstimateClass = new PoseEstimate();
-        gyro = new PigeonIMU(new TalonSRX(Constants.SwerveConstants.pigeonID));
+
+        gyro = new PigeonIMU(new TalonSRX(SwerveConstants.pigeonID));
         gyro.configFactoryDefault();
         zeroGyro();
 
         SmartDashboard.putData(field2d);
         mSwerveMods = new SwerveModule[] {
-                new SwerveModule(0, Constants.SwerveConstants.Mod0.constants),
-                new SwerveModule(1, Constants.SwerveConstants.Mod1.constants),
-                new SwerveModule(2, Constants.SwerveConstants.Mod2.constants),
-                new SwerveModule(3, Constants.SwerveConstants.Mod3.constants)
+                new SwerveModule(0, SwerveConstants.FrontLeftModule.constants),
+                new SwerveModule(1, SwerveConstants.FrontRightModule.constants),
+                new SwerveModule(2, SwerveConstants.BackLeftModule.constants),
+                new SwerveModule(3, SwerveConstants.BackRightModule.constants)
         };
 
         swerveOdometry = new SwerveDriveOdometry(Constants.SwerveConstants.swerveKinematics, getYaw(), getPositions());
         poseEstimation = new SwerveDrivePoseEstimator(Constants.SwerveConstants.swerveKinematics, getYaw(),
                 getPositions(), swerveOdometry.getPoseMeters());
+        /**
+         * Sets how much does the SwervePoseEstimator trusts vision data. See WPILib
+         * documentation & the SwervePoseEstimator class for more.
+         */
         poseEstimation.setVisionMeasurementStdDevs(VecBuilder.fill(0.3, 0.3, 0.3));
     }
 
     /**
-     * Drives the robot during teleop control.
+     * Drives the robot (mostly) during teleop control.
      * 
      * @see TeleopSwerve
      * 
-     * @param translation   Movement of the robot on the X & Y plane
-     * @param rotation      Movement in rotation.
+     * @param translation   Movement of the robot on the X & Y plane (meters /
+     *                      second)
+     * @param rotation      Movement in rotation. (radians / second)
      * @param fieldRelative If the robot should move relative to the field or the
      *                      robot.
      * @param isOpenLoop    If the robot should use PID & FF to correct itself and
      *                      be more accurate
      */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        // use less ternary operator and state more explicit local varibles in the
-        // function
-        SwerveModuleState[] swerveModuleStates = Constants.SwerveConstants.swerveKinematics.toSwerveModuleStates(
-                fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                        translation.getX(),
-                        translation.getY(),
-                        rotation,
-                        isOpenLoop ? getTeleopYaw() : getYaw())
-                        : new ChassisSpeeds(
-                                translation.getX(),
-                                translation.getY(),
-                                rotation));
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.SwerveConstants.maxSpeed);
+        ChassisSpeeds chasisSpeeds;
 
-        // mSwerveMods[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
+        // Gets the current
+        if (fieldRelative)
+            chasisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    translation.getX(),
+                    translation.getY(),
+                    rotation,
+                    isOpenLoop ? getTeleopYaw() : getYaw());
+        else
+            chasisSpeeds = new ChassisSpeeds(
+                    translation.getX(),
+                    translation.getY(),
+                    rotation);
+
+        SwerveModuleState[] swerveModuleStates = SwerveConstants.swerveKinematics
+                .toSwerveModuleStates(chasisSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
 
         for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
     }
 
+    /**
+     * Stops the modules in place
+     * (Sets 0 m/s as setpoints and 0 degrees for the rotation setpoint using
+     * OpenLoop)
+     */
     public void stopModules() {
         for (SwerveModule module : mSwerveMods) {
             module.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), true);
         }
     }
 
-    /* Used by SwerveControllerCommand in Auto */
-    public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.SwerveConstants.maxSpeed);
+    /**
+     * Sets the desired states for each module. Using closed loop control.
+     * 
+     * @param desiredStates Desired states for each module as a SwerveModuleState
+     *                      array.
+     */
+    public void setModuleStatesClosedLoop(SwerveModuleState[] desiredStates) {
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.maxSpeed);
 
         for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
         }
     }
 
+    /**
+     * Gets the current robot's estimated position on the field.
+     * If VisionPoseEstimator is not set, returns only the position using odometry
+     * data,
+     * otherwise the position is fused from both of them in SwervePoseEstimator.
+     * 
+     * @return The current robot's position on the field, as a Pose2d object.
+     */
     public Pose2d getPose() {
         return poseEstimation.getEstimatedPosition();
     }
 
-    public void setFieldTrajectory(String name, Trajectory trajectory) {
-        field2d.getObject(name).setTrajectory(trajectory);
-    }
-
-    public void resetOdometry(Pose2d pose) {
-        swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
+    /**
+     * Resets the current odometry/pose estimator's position to the given pose.
+     * 
+     * @param pose pose to reset the odometry / pose estimator to.
+     */
+    public void resetPose(Pose2d pose) {
+        poseEstimation.resetPosition(getYaw(), getPositions(), pose);
     }
 
     public SwerveModuleState[] getStates() {
@@ -150,10 +183,18 @@ public class Swerve extends SubsystemBase {
         gyro.setYaw(0);
     }
 
+    /**
+     * Zeros the teleop gyro offset to be the same as the gyro's current angle.
+     */
     public void zeroTeleopGyro() {
         teleopRotationOffset = getYaw().getDegrees();
     }
 
+    /**
+     * Returns the current gyro's yaw angle.
+     * 
+     * @return The current gyro's yaw angle in a Rotation2d object.
+     */
     public Rotation2d getYaw() {
         double[] ypr = new double[3];
         gyro.getYawPitchRoll(ypr);
@@ -161,17 +202,25 @@ public class Swerve extends SubsystemBase {
                 : Rotation2d.fromDegrees(ypr[0]);
     }
 
+    /**
+     * Returns the current gyro's angle offset by the teleop rotation offset.
+     *
+     * To avoid gyro resetting messing with odometry data, during teleop the driver
+     * resets the offset to the current gyro angle, rather then resetting the gyro
+     * itself. Therefore having a teleop gyro value and a normal gyro value.
+     *
+     * @return "Teleop Gyro"'s current angle in a Rotation2d object.
+     */
     public Rotation2d getTeleopYaw() {
         return getYaw().minus(Rotation2d.fromDegrees(teleopRotationOffset));
     }
 
     @Override
     public void periodic() {
-        swerveOdometry.update(getYaw(), getPositions());
+        updateOdometry();
 
         SmartDashboard.putNumber("Gyro", getYaw().getDegrees());
         SmartDashboard.putNumber("Teleop Gyro", getTeleopYaw().getDegrees());
-        updateOdometry();
 
         for (SwerveModule mod : mSwerveMods) {
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
@@ -182,27 +231,42 @@ public class Swerve extends SubsystemBase {
 
     public void updateOdometry() {
         poseEstimation.update(getYaw(), getPositions());
+        swerveOdometry.update(getYaw(), getPositions());
         field2d.getObject("Odometry").setPose(swerveOdometry.getPoseMeters());
 
-        // Also apply vision measurements. We use 0.3 seconds in the past as an example
-        // -- on
-        // a real robot, this must be calculated based either on latency or timestamps.
-        Pair<Pose3d, Double> result = poseEstimateClass.getEstimatedGlobalPose(poseEstimation.getEstimatedPosition());
-        var camPose = result.getFirst();
-        var camPoseObsTime = result.getSecond();
-        if (camPose != null) {
-            poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
-            field2d.getObject("Vision position").setPose(camPose.toPose2d());
+        if (visionPoseEstimator != null) {
+            Pair<Pose3d, Double> result = visionPoseEstimator
+                    .getEstimatedGlobalPose(poseEstimation.getEstimatedPosition());
+
+            var camPose = result.getFirst();
+            var camPoseObsTime = result.getSecond();
+
+            if (camPose != null) {
+                poseEstimation.addVisionMeasurement(camPose.toPose2d(), camPoseObsTime);
+                field2d.getObject("Vision Position").setPose(camPose.toPose2d());
+            }
         }
+
         field2d.setRobotPose(getPose());
     }
 
-    public void resetToAbsoluteModules() {
-        for (SwerveModule mod : mSwerveMods) {
-            mod.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(mod.getOffset())), true);
-        }
+    /**
+     * Sets the pose estimator to use.
+     * Setting it to null means the swerve won't utilize the vision pose estimator.
+     * 
+     * @param visionPoseEstimator vision pose estimator to go off of.
+     */
+    public void setVisionPoseEstimator(VisionPoseEstimator visionPoseEstimator) {
+        this.visionPoseEstimator = visionPoseEstimator;
     }
 
+    /**
+     * Returns modules' encoder positions (Drive Motors) and the module's angle -
+     * used for Odometry & Pose Estimator
+     * 
+     * @return An array of SwerveModulePosition objects containing that data
+     * @see SwerveModulePosition
+     */
     public SwerveModulePosition[] getPositions() {
         return new SwerveModulePosition[] {
                 mSwerveMods[0].getPostion(),
@@ -212,32 +276,130 @@ public class Swerve extends SubsystemBase {
         };
     }
 
-    public Command trajectoryToTag(int tagID) {
-        Supplier<Command> followCmdSupplier = () -> new PPSwerveControllerCommand(generateTrajectory(tagID),
+    /**
+     * Follows a path from the current robot's position to an offset position
+     * relative to an AprilTag on the field.
+     * This depends on {@link VisionPoseEstimator}! Without a vision pose estimator
+     * set, you cannot have a trajectory made to a tag!
+     * 
+     * @param tagID         ID Number of the tag.
+     * @param offsetFromTag Relative offset from the AprilTag's position as the goal
+     *                      position to arrive at.
+     * @return A ProxyCommand which regenerates the command when scheduled, to have
+     *         the trajectory be accurate to where the robot is at the point it's
+     *         called.
+     */
+    public Command followTrajectoryToTag(int tagID, Translation2d offsetFromTag) {
+        if (visionPoseEstimator == null)
+            return new InstantCommand(); // Empty command incase VisionPoseEstimator is not set.
+
+        Supplier<Command> followCmdSupplier = () -> new PPSwerveControllerCommand(
+                generateTrajectoryToTag(tagID, offsetFromTag),
                 this::getPose,
                 SwerveConstants.swerveKinematics,
                 new PIDController(AutoConstants.kPXController, 0, 0),
                 new PIDController(AutoConstants.kPYController, 0, 0),
                 new PIDController(AutoConstants.kPThetaController, 0, 0),
-                this::setModuleStates,
+                this::setModuleStatesClosedLoop,
                 false,
                 this);
 
         return new ProxyCommand(followCmdSupplier);
     }
 
-    public PathPlannerTrajectory generateTrajectory(int tagID) {
+    /**
+     * Generates a trajectory from the robot's current position to a position on the
+     * field relative to an AprilTag marker.
+     * This depends on {@link VisionPoseEstimator}! Without a vision pose estimator
+     * set, you cannot have a trajectory made to a tag!
+     * 
+     * @param tagID         ID Number of the tag.
+     * @param goalOffsetFromTag Relative offset from the AprilTag's position as the goal
+     *                      position to arrive at.
+     * @return A trajectory to follow from the robot's current position to the goal
+     *         position
+     */
+    public PathPlannerTrajectory generateTrajectoryToTag(int tagID, Translation2d goalOffsetFromTag) {
+        if (visionPoseEstimator == null)
+            return new PathPlannerTrajectory(); // Empty trajectory - 0 seconds duration.
+
         PathPoint robotPose = new PathPoint(getPose().getTranslation(), getYaw());
-        Pose2d targetPosition = poseEstimateClass.getApriltagLayout().getTagPose(tagID).get().toPose2d();
-        var goalOffsetFromTarget = new Translation2d(1, 0.3);
-        
-        // better name, not easy to understand
-        var goalTranslation = targetPosition.getTranslation().minus(goalOffsetFromTarget);
-        PathPoint endPoint = new PathPoint(goalTranslation, Rotation2d.fromDegrees(0));
+        Pose2d targetPosition = visionPoseEstimator.getApriltagLayout().getTagPose(tagID).get().toPose2d();
+
+        var goalPosition = targetPosition.getTranslation().minus(goalOffsetFromTag);
+        PathPoint endPoint = new PathPoint(goalPosition, Rotation2d.fromDegrees(0));
 
         return PathPlanner.generatePath(
                 new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond,
                         AutoConstants.kMaxAccelerationMetersPerSecondSquared),
                 List.of(robotPose, endPoint));
+    }
+
+    /**
+     * Follows a given trajectory from PathPlanner
+     * 
+     * @param trajectory          Trajectory to follow
+     * @param shouldResetOdometry Should odometry be reset before following the
+     *                            trajectory or not
+     * @return Returns a sequential command group to reset odometry, and follow the
+     *         path, according to the arguments.
+     * 
+     * @apiNote In 2023, the field is rotationally asymetric,
+     *          as a cause of that trajectories have to flip if
+     *          you're on the red side.
+     *          To have the trajectory work for both sides, use
+     *          the overload method with the useAllianceColor argument instead of
+     *          this one.
+     */
+    public Command followTrajectory(PathPlannerTrajectory trajectory, boolean shouldResetOdometry) {
+
+        PPSwerveControllerCommand followTrajecotryControllerCommand = new PPSwerveControllerCommand(
+                trajectory,
+                this::getPose,
+                SwerveConstants.swerveKinematics,
+                new PIDController(AutoConstants.kPXController, 0, 0),
+                new PIDController(AutoConstants.kPYController, 0, 0),
+                new PIDController(AutoConstants.kPThetaController, 0, 0),
+                this::setModuleStatesClosedLoop,
+                false, // Assuming we don't need to flip the trajectory, we set this to false.
+                this);
+
+        InstantCommand resetOdometryBeforePath = new InstantCommand(() -> {
+            if (shouldResetOdometry)
+                resetPose(trajectory.getInitialHolonomicPose());
+        }, this);
+        return resetOdometryBeforePath.andThen(followTrajecotryControllerCommand);
+
+    }
+
+    /**
+     * Follows a given trajectory from PathPlanner
+     * 
+     * @param trajectory          Trajectory to follow
+     * @param shouldResetOdometry Should odometry be reset before following the
+     *                            trajectory or not
+     * 
+     * @param useAllianceColor    Should the trajectory change based on alliance.
+     *                            In 2023, the field is rotationally asymetric,
+     *                            as a cause of that trajectories have to flip if
+     *                            you're on the red side. This follow trajectory
+     *                            command accounts for that.
+     * 
+     * @return ProxyCommand which regenerates the command so that on
+     *         the start auto, we would have the Driver Station data to know
+     *         what alliance we are, and flip the trajectory if necessary.
+     */
+    public Command followTrajectory(PathPlannerTrajectory trajectory, boolean shouldResetOdometry,
+            boolean useAllianceColor) {
+
+        Supplier<Command> followCommandSupplier = () -> {
+            // Modifies trajectory in case we need to because of our alliance
+            PathPlannerTrajectory modifiedTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(trajectory,
+                    DriverStation.getAlliance());
+
+            return followTrajectory(modifiedTrajectory, shouldResetOdometry);
+        };
+
+        return new ProxyCommand(followCommandSupplier);
     }
 }

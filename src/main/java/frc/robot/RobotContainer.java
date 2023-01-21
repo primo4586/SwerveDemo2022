@@ -4,16 +4,18 @@
 
 package frc.robot;
 
+import org.photonvision.RobotPoseEstimator.PoseStrategy;
+
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-
-import frc.robot.autos.*;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
@@ -33,14 +35,18 @@ public class RobotContainer {
   private final int rotationAxis = XboxController.Axis.kRightX.value;
 
   /* Subsystems */
-  private final Swerve s_Swerve = new Swerve();
+  private final Swerve swerve = new Swerve();
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     boolean fieldRelative = true;
     boolean openLoop = true;
-    s_Swerve.setDefaultCommand(new TeleopSwerve(s_Swerve, driverController, translationAxis, strafeAxis, rotationAxis, fieldRelative, openLoop, () ->driverController.getRightTriggerAxis() > 0.5));
+
+    VisionPoseEstimator visionPoseEstimator = new VisionPoseEstimator(PoseStrategy.LOWEST_AMBIGUITY);
+    swerve.setVisionPoseEstimator(visionPoseEstimator);
+
+    swerve.setDefaultCommand(new TeleopSwerve(swerve, driverController, translationAxis, strafeAxis, rotationAxis, fieldRelative, openLoop, () ->driverController.getRightTriggerAxis() > 0.5));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -54,13 +60,10 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     /* Driver Buttons */
+    driverController.y().onTrue(new InstantCommand(() -> swerve.zeroGyro(), swerve));
 
-    // tuneDriveMotor.whenPressed(new TuneDriveMotor(s_Swerve));
-    // testModule.whileTrue(s_Swerve.testSpecificModule());
-    
-    //zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
-    driverController.y().onTrue(new InstantCommand(() -> s_Swerve.zeroGyro(), s_Swerve));
-    driverController.b().onTrue(s_Swerve.trajectoryToTag(1));
+    // Example tag ID position to go for, & the translation offset from the tag's position
+    driverController.b().onTrue(swerve.followTrajectoryToTag(1, new Translation2d(1, 0))); 
   }
 
   /** 
@@ -69,7 +72,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return new PathPlannerFollowCommand(s_Swerve);
+
+    PathConstraints constraints = new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
+    return swerve.followTrajectory(PathPlanner.loadPath("One Meter Forward", constraints), true);
   }
 } 
