@@ -60,7 +60,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     /* Driver Buttons */
-    driverController.y().onTrue(new InstantCommand(() -> swerve.zeroGyro(), swerve));
+    driverController.y().onTrue(new InstantCommand(() -> swerve.zeroTeleopGyro(), swerve));
 
     // Example tag ID position to go for, & the translation offset from the tag's position
     driverController.b().onTrue(swerve.followTrajectoryToTag(1, new Translation2d(1, 0))); 
