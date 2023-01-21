@@ -259,7 +259,7 @@ public class Swerve extends SubsystemBase {
         PathPoint robotPose = new PathPoint(getPose().getTranslation(), getYaw());
         Pose2d targetPosition = poseEstimateClass.getApriltagLayout().getTagPose(tagID).get().toPose2d();
         var goalOffsetFromTarget = new Translation2d(1, 0.3);
-        
+
         // better name, not easy to understand
         var goalTranslation = targetPosition.getTranslation().minus(goalOffsetFromTarget);
         PathPoint endPoint = new PathPoint(goalTranslation, Rotation2d.fromDegrees(0));
@@ -268,5 +268,18 @@ public class Swerve extends SubsystemBase {
                 new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond,
                         AutoConstants.kMaxAccelerationMetersPerSecondSquared),
                 List.of(robotPose, endPoint));
+    }
+
+    public Command gyroAlignCommand(double degrees) {
+
+        PIDController pid = new PIDController(SwerveConstants.angleRobotKP, 0, 0);
+
+        return run(() -> {
+            drive(
+                    new Translation2d(),
+                    pid.calculate(getYaw().getDegrees(), degrees),
+                    false,
+                    false);
+        }).until(() -> pid.atSetpoint());
     }
 }

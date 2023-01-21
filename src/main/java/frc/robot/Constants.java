@@ -71,6 +71,12 @@ public final class Constants {
         public static final double driveKD = 0.0;
         public static final double driveKF = 0.0;
 
+        /* Angle Robot PID Values */
+        public static final double angleRobotKP = 0.3;
+        public static final double angleRobotKI = 0.0;
+        public static final double angleRobotKD = 0.0;
+        public static final double angleRobotKF = 0.0;
+
         /* Drive Motor Characterization Values */
         public static final double driveKS = (0.63964 / 12); //divide by 12 to convert from volts to percent output for CTRE
         public static final double driveKV = (2.6223 / 12);
